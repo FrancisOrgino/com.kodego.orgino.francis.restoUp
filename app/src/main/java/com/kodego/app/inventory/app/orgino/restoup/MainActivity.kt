@@ -14,6 +14,6 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.rvMain.adapter = MainAdapter()
+//        binding.rvMain.adapter = MainAdapter()
     }
 }

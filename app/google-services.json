@@ -34,6 +34,35 @@
           ]
         }
       }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:193695500557:android:e15a27b3d78904e38e0844",
+        "android_client_info": {
+          "package_name": "com.kodego.app.inventory.app.orgino.restoup"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "193695500557-mfkmnp298o2dur4p7ijbmp8htgamapgn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBkNopCxr7ONoQmobxE_2XIs4n7TNVnJmA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "193695500557-mfkmnp298o2dur4p7ijbmp8htgamapgn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
     }
   ],
   "configuration_version": "1"

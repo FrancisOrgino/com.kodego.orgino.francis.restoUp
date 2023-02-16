@@ -26,8 +26,11 @@
             android:name=".AdminLogin"
             android:exported="false" />
         <activity
+            android:name=".AdminInterface"
+            android:exported="true" />
+        <activity
             android:name=".LoginOptionsActivity"
-            android:exported="false" />
+            android:exported="true" />
         <activity
             android:name=".MainActivity"
             android:exported="true">

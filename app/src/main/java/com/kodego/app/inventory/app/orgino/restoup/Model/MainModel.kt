@@ -4,4 +4,4 @@ data class MainModel (
     val menuTitle: String,
     val subMenuModel: List<SubMenuModel>
 
-        )
+    )
