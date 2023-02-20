@@ -1,5 +1,7 @@
 package com.kodego.app.inventory.app.orgino.restoup.Data
 
+import com.google.firebase.auth.FirebaseAuth
+
 data class User (
     var userName:String,
     var passWord:String,

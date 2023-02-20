@@ -11,8 +11,13 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.RestoUp"
+        android:theme="@style/AppTheme"
         tools:targetApi="31">
+        <activity
+            android:name=".MainInterface"
+            android:exported="true"
+            android:label="@string/title_activity_main_interface"
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".AdminAddTable"
             android:exported="false" />
@@ -23,9 +28,6 @@
             android:name=".AdminAddItem"
             android:exported="false" />
         <activity
-            android:name=".AdminLogin"
-            android:exported="false" />
-        <activity
             android:name=".AdminInterface"
             android:exported="true" />
         <activity
@@ -33,6 +35,9 @@
             android:exported="true" />
         <activity
             android:name=".MainActivity"
+            android:exported="true" />
+        <activity
+            android:name=".SplashScreen"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

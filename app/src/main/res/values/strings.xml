@@ -1,3 +1,20 @@
 <resources>
     <string name="app_name">RestoUp</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="sign_in">Sign In</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="title_activity_main_interface">MainInterface</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">RestoUp</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">My Profile</string>
+
+    <string name="menu_home">Home</string>
+    <string name="menu_take_an_order">Take an Order</string>
+    <string name="menu_order_queue">Order Queue</string>
+    <string name="menu_customer_checkout">Customer Checkout</string>
 </resources>
