@@ -17,24 +17,10 @@
             android:name=".MainInterface"
             android:exported="true"
             android:label="@string/title_activity_main_interface"
+            android:windowSoftInputMode="adjustResize"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".AdminAddTable"
-            android:exported="false" />
-        <activity
-            android:name=".AdminCreateUser"
-            android:exported="false" />
-        <activity
-            android:name=".AdminAddItem"
-            android:exported="false" />
-        <activity
-            android:name=".AdminInterface"
-            android:exported="true" />
-        <activity
             android:name=".LoginOptionsActivity"
-            android:exported="true" />
-        <activity
-            android:name=".MainActivity"
             android:exported="true" />
         <activity
             android:name=".SplashScreen"
