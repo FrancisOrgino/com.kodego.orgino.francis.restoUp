@@ -16,9 +16,5 @@ class FirebaseHandler:Application() {
 
         // Apply dynamic color
         DynamicColors.applyToActivitiesIfAvailable(this)
-
-
-//        var auth = FirebaseAuth.getInstance()
-//        var appUser = auth.currentUser
     }
 }

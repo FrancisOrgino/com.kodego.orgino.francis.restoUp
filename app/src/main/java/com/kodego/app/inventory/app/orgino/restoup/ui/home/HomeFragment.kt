@@ -1,13 +1,26 @@
 package com.kodego.app.inventory.app.orgino.restoup.ui.home
 
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.outlined.Add
@@ -17,7 +30,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -25,15 +44,15 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.fragment.app.Fragment
 import com.example.compose.AppTheme
-import com.kodego.app.inventory.app.orgino.restoup.Data.User
 import com.kodego.app.inventory.app.orgino.restoup.Data.UserTypes
 import com.kodego.app.inventory.app.orgino.restoup.auth
 import com.kodego.app.inventory.app.orgino.restoup.db
 import java.time.LocalDate
-import androidx.lifecycle.lifecycleScope
 import com.kodego.app.inventory.app.orgino.restoup.Data.ConvertedUser
+import com.kodego.app.inventory.app.orgino.restoup.Data.MenuItem
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
+
 
 class HomeFragment : Fragment() {
     override fun onCreateView(
@@ -67,7 +86,7 @@ fun Home() {
                     AddNewEmployee()
                 }
                 item {
-                    Button(text = "Setup Restaurant Menu")
+                    SetupRestaurantMenu()
                 }
                 item {
                     Button(text = "Add a Table")
@@ -184,7 +203,6 @@ fun AddNewRestaurant() {
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview
 @Composable
 fun AddNewEmployee() {
     val openAddNewEmployeeDialog = remember { mutableStateOf(false) }
@@ -195,6 +213,7 @@ fun AddNewEmployee() {
     var newEmployeeEmployerUID = auth.uid!!
     var newEmployeeRole by remember {mutableStateOf<UserTypes?>(null)}
     var newEmployeeEmail by remember {mutableStateOf(TextFieldValue(""))}
+    var selectedRestaurant by remember {mutableStateOf(TextFieldValue(""))}
     var newEmployeeInitialPassword by remember {mutableStateOf(TextFieldValue(""))}
 
     if (openAddNewEmployeeDialog.value) {
@@ -231,7 +250,8 @@ fun AddNewEmployee() {
                         )
 
                         TextButton(
-                            enabled =   newEmployeeFirstName.text.isNotEmpty() &&
+                            enabled =   selectedRestaurant.text.isNotEmpty() &&
+                                        newEmployeeFirstName.text.isNotEmpty() &&
                                         newEmployeeMiddleName.text.isNotEmpty() &&
                                         newEmployeeLastName.text.isNotEmpty() &&
                                         newEmployeeBirthdate != null &&
@@ -248,7 +268,9 @@ fun AddNewEmployee() {
                                     newEmployeeEmail.text,
                                     newEmployeeInitialPassword.text,
                                     newEmployeeRole!!,
-                                    newEmployeeEmployerUID)
+                                    newEmployeeEmployerUID,
+                                    selectedRestaurant.text
+                                )
                                 db.addEmployeeAccount(newEmployeeEmail.text, newEmployeeInitialPassword.text, newEmployee)
                                 openAddNewEmployeeDialog.value = false
                             }) {
@@ -262,6 +284,53 @@ fun AddNewEmployee() {
                             )
                         }
                     }
+
+                    Text (text = "Currently Setting Up Employee Account for this Restaurant:", modifier = Modifier.padding(10.dp, 10.dp, 0.dp))
+                    db.loadRestaurantList(auth.uid!!)
+                    val restaurantOptions by remember {mutableStateOf(db.ownedRestaurantsList)}
+                    var restaurantPickerExpanded by remember { mutableStateOf(false) }
+                    var selectedRestaurantText by remember { mutableStateOf("")}
+                    ExposedDropdownMenuBox(
+                        expanded = restaurantPickerExpanded,
+                        onExpandedChange = {
+                            restaurantPickerExpanded = !restaurantPickerExpanded
+                        }
+                    ) {
+                        OutlinedTextField(
+                            readOnly = true,
+                            value = selectedRestaurantText,
+                            onValueChange = {  },
+                            shape = ShapeDefaults.Small,
+                            label = { Text(text = "Choose a Restaurant") },
+                            modifier = Modifier
+                                .menuAnchor()
+                                .padding(10.dp, 0.dp, 10.dp, 10.dp),
+                            trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(
+                                    expanded = restaurantPickerExpanded
+                                )
+                            },
+                            colors = ExposedDropdownMenuDefaults.textFieldColors()
+                        )
+                        ExposedDropdownMenu(
+                            expanded = restaurantPickerExpanded,
+                            onDismissRequest = {
+                                restaurantPickerExpanded = false
+                            }
+                        ) {
+                            restaurantOptions.forEach { selectionOption ->
+                                DropdownMenuItem(
+                                    onClick = {
+                                        selectedRestaurantText = selectionOption
+                                        selectedRestaurant = TextFieldValue(selectionOption)
+                                        restaurantPickerExpanded = false
+                                    },
+                                    text = { Text(text = selectionOption) }
+                                )
+                            }
+                        }
+                    }
+
                     Spacer(modifier = Modifier.width(15.dp))
                     Text (text = "First Name", modifier =  Modifier.padding(10.dp, 0.dp))
                     OutlinedTextField(
@@ -378,7 +447,7 @@ fun AddNewEmployee() {
                         label = { Text(text = "Enter employee's login password.") }
                     )
                     Spacer(modifier = Modifier.width(15.dp))
-                    Text (text = "Restaurant Address", modifier = Modifier.padding(10.dp, 10.dp, 0.dp))
+                    Text (text = "Employee Role", modifier = Modifier.padding(10.dp, 10.dp, 0.dp))
                     val options = listOf("Waiter", "Cashier", "Kitchen Staff")
                     var expanded by remember { mutableStateOf(false) }
                     var selectedOptionText by remember { mutableStateOf("")}
@@ -440,5 +509,344 @@ fun AddNewEmployee() {
     }
 }
 
-//@Preview
-//@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+@Preview
+fun SetupRestaurantMenu() {
+    var openSetupRestaurantMenuDialog = remember { mutableStateOf(false) }
+    var openCreateMenuCategoryDialog = remember { mutableStateOf(false) }
+    var selectedRestaurant by remember {mutableStateOf(TextFieldValue(""))}
+    var menuItemCategory by remember {mutableStateOf(TextFieldValue(""))}
+    var menuItemName by remember {mutableStateOf(TextFieldValue(""))}
+    var menuItemPrice by remember {mutableStateOf(TextFieldValue(""))}
+    var menuItemImage = remember {mutableStateOf<List<Uri>?>(null)}
+
+    if (openSetupRestaurantMenuDialog.value) {
+        Dialog(
+            onDismissRequest = { openSetupRestaurantMenuDialog.value = false }
+        ) {
+            Surface(
+                Modifier
+                    .verticalScroll(rememberScrollState(0), true)
+                    .fillMaxWidth(),
+                shape = ShapeDefaults.Medium
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        Modifier
+                            .height(IntrinsicSize.Min)
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        IconButton(onClick = { openSetupRestaurantMenuDialog.value = false }) {
+                            Icon(
+                                Icons.Outlined.ArrowBack,
+                                contentDescription = "Cancel adding a new menu item."
+                            )
+                        }
+                        Text(
+                            text = "Setup Restaurant Menu",
+                            modifier = Modifier
+                                .wrapContentWidth(Alignment.CenterHorizontally)
+                                .align(Alignment.CenterVertically)
+                        )
+
+                        TextButton(
+                            enabled = selectedRestaurant.text.isNotEmpty() &&
+                            menuItemCategory.text.isNotEmpty() &&
+                            menuItemName.text.isNotEmpty() &&
+                            menuItemPrice.text.isNotEmpty(),
+                            onClick = {
+                                val newMenuItemData = if (menuItemImage.value==null) {
+                                    MenuItem(selectedRestaurant.text, menuItemCategory.text, menuItemName.text, menuItemPrice.text.toDouble())
+                                } else {
+                                    MenuItem(selectedRestaurant.text, menuItemCategory.text, menuItemName.text, menuItemPrice.text.toDouble(), menuItemImage.value!!)
+                                }
+                                db.addMenuItem(newMenuItemData, auth.uid!!)
+                                openSetupRestaurantMenuDialog.value = false
+                            })
+                        {
+                            Icon(
+                                Icons.Outlined.Add,
+                                contentDescription = "Save restaurant menu item data."
+                            )
+                            Text(
+                                text = "Save",
+                                modifier = Modifier.wrapContentSize(Alignment.Center)
+                            )
+                        }
+                    }
+
+                    Text (text = "Currently Setting Up the Menu for this Restaurant:", modifier = Modifier.padding(10.dp, 10.dp, 0.dp))
+                    db.loadRestaurantList(auth.uid!!)
+                    val restaurantOptions by remember {mutableStateOf(db.ownedRestaurantsList)}
+                    var restaurantPickerExpanded by remember { mutableStateOf(false) }
+                    var selectedRestaurantText by remember { mutableStateOf("")}
+                    ExposedDropdownMenuBox(
+                        expanded = restaurantPickerExpanded,
+                        onExpandedChange = {
+                            restaurantPickerExpanded = !restaurantPickerExpanded
+                        }
+                    ) {
+                        OutlinedTextField(
+                            readOnly = true,
+                            value = selectedRestaurantText,
+                            onValueChange = {  },
+                            shape = ShapeDefaults.Small,
+                            label = { Text(text = "Choose a Restaurant") },
+                            modifier = Modifier
+                                .menuAnchor()
+                                .padding(10.dp, 0.dp, 10.dp, 10.dp),
+                            trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(
+                                    expanded = restaurantPickerExpanded
+                                )
+                            },
+                            colors = ExposedDropdownMenuDefaults.textFieldColors()
+                        )
+                        ExposedDropdownMenu(
+                            expanded = restaurantPickerExpanded,
+                            onDismissRequest = {
+                                restaurantPickerExpanded = false
+                            }
+                        ) {
+                            restaurantOptions.forEach { selectionOption ->
+                                DropdownMenuItem(
+                                    onClick = {
+                                        selectedRestaurantText = selectionOption
+                                        selectedRestaurant = TextFieldValue(selectionOption)
+                                        restaurantPickerExpanded = false
+                                    },
+                                    text = { Text(text = selectionOption) }
+                                )
+                            }
+                        }
+                    }
+
+                    Text (text = "Item Menu Category", modifier = Modifier.padding(10.dp, 10.dp, 0.dp))
+                    db.loadMenuCategoryList(selectedRestaurant.text, auth.uid!!)
+                    val context = LocalContext.current
+                    val menuCategoryOptions by remember { mutableStateOf(db.restaurantMenuCategoryList) }
+                    var menuCategoryOptionsExpanded by remember { mutableStateOf(false) }
+                    var selectedMenuCategoryOptionText by remember { mutableStateOf("")}
+                    ExposedDropdownMenuBox(
+                        expanded = menuCategoryOptionsExpanded,
+                        onExpandedChange = {
+                            menuCategoryOptionsExpanded =
+                                if (selectedRestaurant.text.isNotBlank()) {
+                                    !menuCategoryOptionsExpanded
+                                } else {
+                                    Toast.makeText(context, "Please choose a restaurant first.", Toast.LENGTH_SHORT).show()
+                                    false
+                                }
+                        }
+                    ) {
+                        OutlinedTextField(
+                            readOnly = true,
+                            value = selectedMenuCategoryOptionText,
+                            onValueChange = {  },
+                            shape = ShapeDefaults.Small,
+                            label = { Text(text = "Select Menu Item Category") },
+                            modifier = Modifier
+                                .menuAnchor()
+                                .padding(10.dp, 0.dp, 10.dp, 10.dp),
+                            trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(
+                                    expanded = menuCategoryOptionsExpanded
+                                )
+                            },
+                            colors = ExposedDropdownMenuDefaults.textFieldColors()
+                        )
+                        ExposedDropdownMenu(
+                            expanded = menuCategoryOptionsExpanded,
+                            onDismissRequest = {
+                                menuCategoryOptionsExpanded = false
+                            }
+                        ) {
+                            menuCategoryOptions.forEach { selectionOption ->
+                                DropdownMenuItem(
+                                    onClick = {
+                                        selectedMenuCategoryOptionText = selectionOption
+                                        menuItemCategory = TextFieldValue(selectionOption)
+                                        menuCategoryOptionsExpanded = false
+                                    },
+                                    text = { Text(text = selectionOption) }
+                                )
+                            }
+                            DropdownMenuItem(
+                                text = { Text(text = "Add New Menu Category") },
+                                onClick = {
+                                    openCreateMenuCategoryDialog.value = true
+                                }
+                            )
+                            //CreateMenuCategoryDialog
+                            var newMenuCategory by remember { mutableStateOf(TextFieldValue("")) }
+                            if (openCreateMenuCategoryDialog.value) {
+                                Dialog(
+                                    onDismissRequest = { openCreateMenuCategoryDialog.value = false },
+                                ) {
+                                    Surface(
+                                        Modifier
+                                            .verticalScroll(rememberScrollState(0), true)
+                                            .fillMaxWidth(),
+                                        shape = ShapeDefaults.Medium
+                                    ) {
+                                        Column(
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+                                            Row(
+                                                Modifier
+                                                    .height(IntrinsicSize.Min)
+                                                    .fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.SpaceBetween
+                                            ) {
+                                                IconButton(onClick = { openCreateMenuCategoryDialog.value = false }) {
+                                                    Icon(
+                                                        Icons.Outlined.ArrowBack,
+                                                        contentDescription = "Cancel adding a new menu category."
+                                                    )
+                                                }
+                                                Text(
+                                                    text = "Add Menu Category",
+                                                    modifier = Modifier
+                                                        .wrapContentWidth(Alignment.CenterHorizontally)
+                                                        .align(Alignment.CenterVertically)
+                                                )
+
+                                                TextButton(
+                                                    enabled = newMenuCategory.text.isNotEmpty(),
+                                                    onClick = {
+                                                        db.addMenuCategory(newMenuCategory.text, selectedRestaurant.text, auth.uid!!)
+                                                        menuItemCategory = newMenuCategory
+                                                        selectedMenuCategoryOptionText = newMenuCategory.text
+                                                        menuCategoryOptionsExpanded = false
+                                                        openCreateMenuCategoryDialog.value = false
+                                                    })
+                                                {
+                                                    Icon(
+                                                        Icons.Outlined.Add,
+                                                        contentDescription = "Save restaurant menu category."
+                                                    )
+                                                    Text(
+                                                        text = "Save",
+                                                        modifier = Modifier.wrapContentSize(Alignment.Center)
+                                                    )
+                                                }
+                                            }
+                                            Spacer(modifier = Modifier.width(15.dp))
+                                            Text(text = "Menu Category", modifier = Modifier.padding(10.dp, 0.dp))
+                                            OutlinedTextField(
+                                                value = newMenuCategory,
+                                                onValueChange = {
+                                                    newMenuCategory = TextFieldValue(it.text.uppercase())
+                                                },
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(10.dp, 0.dp, 10.dp, 10.dp),
+                                                label = { Text(text = "Enter New Menu Category") }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(15.dp))
+                    Text (text = "Menu Item Name", modifier =  Modifier.padding(10.dp, 0.dp))
+                    OutlinedTextField(
+                        value = menuItemName,
+                        onValueChange = {
+                            menuItemName = it
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp, 0.dp),
+                        label = { Text(text = "What's your menu offering called?") }
+                    )
+
+                    Spacer(modifier = Modifier.width(15.dp))
+                    Text (text = "Menu Item Price", modifier =  Modifier.padding(10.dp, 0.dp))
+                    val priceContext = LocalContext.current
+                    OutlinedTextField(
+                        value = menuItemPrice,
+                        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                        onValueChange = {
+                            try {
+                                it.text.toDouble()
+                                menuItemPrice = it
+                            } catch (e:java.lang.NumberFormatException) {
+                                Toast.makeText(priceContext, "Please enter valid price value.", Toast.LENGTH_LONG).show()
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp, 0.dp),
+                        label = { Text(text = "Give your menu offering a price!") }
+                    )
+
+                    Spacer(modifier = Modifier.width(25.dp))
+                    var imageData = remember {mutableStateOf<List<Uri>?>(null)}
+                    val imagePickerContext = LocalContext.current
+
+                    val contracts = ActivityResultContracts.GetMultipleContents()
+                    val launcher = rememberLauncherForActivityResult(contract = contracts, onResult = {
+                        imageData.value = it
+                        menuItemImage.value = it
+                    })
+                    if (imageData.value==null) {
+                        Button(
+                            modifier = Modifier.fillMaxWidth()
+                                .padding(10.dp, 0.dp),
+                            onClick = {
+                                launcher.launch("image/*")
+                            }){
+                            Text(text = "Pick Menu Item Image")
+                        }
+                    }
+                    if (imageData.value!=null) {
+                        LazyVerticalGrid(
+                            columns = GridCells.Fixed(3),
+                            modifier = Modifier
+                                .aspectRatio(3F/1F, true),
+                            contentPadding = PaddingValues(10.dp)
+                        ) {
+                            imageData.value?.let { items(it) {imageUri:Uri ->
+                                if (Build.VERSION.SDK_INT <28) {
+                                    val imageBitmap = MediaStore.Images.Media.getBitmap(imagePickerContext.contentResolver, imageUri)
+                                    MenuImage(imageBitmap)
+                                }
+                                else {
+                                    val imageSource = ImageDecoder.createSource(imagePickerContext.contentResolver, imageUri)
+                                    val imageBitmap = ImageDecoder.decodeBitmap(imageSource)
+                                    MenuImage(imageBitmap)
+                                } }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    FilledTonalButton(
+        modifier = Modifier.width(258.dp),
+        enabled = true,
+        onClick =  { openSetupRestaurantMenuDialog.value = true },
+        colors = ButtonDefaults.filledTonalButtonColors()) {
+        Text(text = "Setup Restaurant Menu")
+    }
+}
+
+@Composable
+fun MenuImage(imageBitmap: Bitmap) {
+    Image(
+        painter = BitmapPainter(imageBitmap.asImageBitmap()),
+        contentScale = ContentScale.None,
+        modifier = Modifier
+            .clip(RoundedCornerShape(CornerSize(20.dp)))
+            .padding(5.dp)
+            .aspectRatio(1F / 1F, false),
+        contentDescription = null)
+}
+

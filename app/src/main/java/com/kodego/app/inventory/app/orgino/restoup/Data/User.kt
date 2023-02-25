@@ -15,6 +15,7 @@ data class User (
     var birthDate:LocalDate? = null
     var email:String? = null
     var adminUID:String? = null
+    var assignedRestaurant: String? = null
 
     constructor(userName:String,
                 passWord:String,
@@ -30,14 +31,16 @@ data class User (
                 employeeUserName:String,
                 employeeInitialPassWord:String,
                 employeeUserType:UserTypes,
-                employeeAdminUID:String) : this(employeeUserName, employeeInitialPassWord, employeeUserType) {
-        this.firstName = employeeFirstName
-        this.middleName = employeeMiddleName
-        this.lastName = employeeLastName
-        this.birthDate = employeeBirthDate
-        this.email = employeeEmail
-        this.adminUID = employeeAdminUID
-                }
+                employeeAdminUID:String,
+                employeeAssignedRestaurant: String) : this(employeeUserName, employeeInitialPassWord, employeeUserType) {
+                                    this.firstName = employeeFirstName
+                                    this.middleName = employeeMiddleName
+                                    this.lastName = employeeLastName
+                                    this.birthDate = employeeBirthDate
+                                    this.email = employeeEmail
+                                    this.adminUID = employeeAdminUID
+                                    this.assignedRestaurant = employeeAssignedRestaurant
+    }
 }
 
 data class ConvertedUser (
@@ -52,6 +55,7 @@ data class ConvertedUser (
     var birthDate: String? = null
     var email: String? = null
     var adminUID: String? = null
+    var assignedRestaurant: String? = null
 
     constructor(employeeFirstName:String,
                 employeeMiddleName:String,
@@ -61,13 +65,15 @@ data class ConvertedUser (
                 employeeUserName:String,
                 employeeInitialPassWord:String,
                 employeeUserType:UserTypes,
-                employeeAdminUID:String) : this(employeeUserName, employeeInitialPassWord, employeeUserType) {
-        this.firstName = employeeFirstName
-        this.middleName = employeeMiddleName
-        this.lastName = employeeLastName
-        this.birthDate = employeeBirthDate.toString()
-        this.email = employeeEmail
-        this.adminUID = employeeAdminUID
+                employeeAdminUID:String,
+                employeeAssignedRestaurant: String) :   this(employeeUserName, employeeInitialPassWord, employeeUserType) {
+                                    this.firstName = employeeFirstName
+                                    this.middleName = employeeMiddleName
+                                    this.lastName = employeeLastName
+                                    this.birthDate = employeeBirthDate.toString()
+                                    this.email = employeeEmail
+                                    this.adminUID = employeeAdminUID
+                                    this.assignedRestaurant = employeeAssignedRestaurant
     }
 }
 enum class UserTypes() {
