@@ -3,7 +3,70 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".AdminCreateUser">
+    android:layout_height="wrap_content"
+    tools:context=".AdminCreateUser"
+    android:background="@drawable/common">
+
+
+    <RadioGroup
+        android:id="@+id/rgCreateUserOption"
+        android:layout_width="match_parent"
+        android:layout_height="400dp"
+        android:padding="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <RadioButton
+            android:id="@+id/rbCashier"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="CASHIER" />
+
+        <RadioButton
+            android:id="@+id/rbWaiter"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="WAITER" />
+
+        <RadioButton
+            android:id="@+id/rbKitchen"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="KITCHEN" />
+
+        <EditText
+            android:id="@+id/etStaffUserName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="USERNAME"
+            android:inputType="textPersonName"
+            android:minHeight="48dp" />
+
+        <EditText
+            android:id="@+id/etStaffPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="PASSWORD"
+            android:inputType="textPassword"
+            android:minHeight="48dp" />
+
+        <Button
+            android:id="@+id/btnCreateUser"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="#FF5722"
+            android:text="SAVE USERNAME AND PASSWORD" />
+        <Button
+            android:id="@+id/LoadUserCredentials"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="#FF5722"
+            android:text="LOAD USER CREDENTIALS" />
+
+    </RadioGroup>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

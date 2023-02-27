@@ -20,7 +20,7 @@ class SubMenuAdapter (private val subMenuModel: List<SubMenuModel>) : RecyclerVi
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.binding.apply {
-            tvSubMenuTitle.text=subMenuModel[position].subMenuTitle
+            tvSubItemName.text=subMenuModel[position].subMenuTitle
         }
     }
 

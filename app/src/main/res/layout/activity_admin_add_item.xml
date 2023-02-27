@@ -4,6 +4,61 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".AdminAddItem">
+    android:background="@drawable/common"
+    tools:context=".AdminAddTable">
 
+    // app:layout_constraintTop_toBottomOf="@+id/etItemName"
+
+    <EditText
+        android:id="@+id/etItemPrice"
+        android:layout_width="366dp"
+        android:layout_height="56dp"
+        android:layout_marginTop="12dp"
+        android:backgroundTint="#FF5722"
+        android:ems="10"
+        android:hint="ITEM PRICE"
+        android:inputType="textPersonName"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.644"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/etItemName" />
+
+    <EditText
+        android:id="@+id/etItemName"
+        android:layout_width="366dp"
+        android:layout_height="56dp"
+        android:layout_marginTop="12dp"
+        android:backgroundTint="#FF5722"
+        android:ems="10"
+        android:hint="ITEM NAME"
+        android:inputType="textPersonName"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.644"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/etCategory" />
+
+    <EditText
+        android:id="@+id/etCategory"
+        android:layout_width="366dp"
+        android:layout_height="56dp"
+        android:layout_marginTop="64dp"
+        android:backgroundTint="#FF5722"
+        android:ems="10"
+        android:hint="CATEGORY"
+        android:inputType="textPersonName"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.644"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/btnCreateItem"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="76dp"
+        android:text="CREATE ITEM"
+        android:backgroundTint="#FF5722"
+        app:layout_constraintTop_toBottomOf="@id/etItemPrice"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="133dp" />
 </androidx.constraintlayout.widget.ConstraintLayout>

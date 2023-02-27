@@ -14,6 +14,24 @@
         android:theme="@style/Theme.RestoUp"
         tools:targetApi="31">
         <activity
+            android:name=".AdminInterface"
+            android:exported="false" />
+        <activity
+            android:name=".KitchenInterface"
+            android:exported="false" />
+        <activity
+            android:name=".Model.WaiterInterface"
+            android:exported="false" />
+        <activity
+            android:name=".SplashScreen"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
             android:name=".AdminAddTable"
             android:exported="false" />
         <activity
@@ -29,14 +47,11 @@
             android:name=".LoginOptionsActivity"
             android:exported="false" />
         <activity
+            android:name=".Model.CashierInterface"
+            android:exported="false" />
+        <activity
             android:name=".MainActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            android:exported="true" />
     </application>
 
 </manifest>

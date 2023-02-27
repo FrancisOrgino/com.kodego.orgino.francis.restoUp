@@ -3,12 +3,23 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
-        <entry key="..\:/Users/User/AndroidStudioProjects/RestoUp/app/src/main/res/layout/activity_admin_add_item.xml" value="0.1641337386018237" />
-        <entry key="..\:/Users/User/AndroidStudioProjects/RestoUp/app/src/main/res/layout/activity_admin_create_user.xml" value="0.1641337386018237" />
-        <entry key="..\:/Users/User/AndroidStudioProjects/RestoUp/app/src/main/res/layout/activity_login_options.xml" value="0.1641337386018237" />
+        <entry key="..\:/Users/User/AndroidStudioProjects/RestoUp/app/src/main/res/drawable/ic_baseline_delete_24.xml" value="0.1305" />
+        <entry key="..\:/Users/User/AndroidStudioProjects/RestoUp/app/src/main/res/layout/activity_admin_add_item.xml" value="0.25" />
+        <entry key="..\:/Users/User/AndroidStudioProjects/RestoUp/app/src/main/res/layout/activity_admin_add_table.xml" value="0.15" />
+        <entry key="..\:/Users/User/AndroidStudioProjects/RestoUp/app/src/main/res/layout/activity_admin_create_user.xml" value="0.22" />
+        <entry key="..\:/Users/User/AndroidStudioProjects/RestoUp/app/src/main/res/layout/activity_admin_interface.xml" value="0.2" />
+        <entry key="..\:/Users/User/AndroidStudioProjects/RestoUp/app/src/main/res/layout/activity_admin_login.xml" value="0.22" />
+        <entry key="..\:/Users/User/AndroidStudioProjects/RestoUp/app/src/main/res/layout/activity_cashier_interface.xml" value="0.16875" />
+        <entry key="..\:/Users/User/AndroidStudioProjects/RestoUp/app/src/main/res/layout/activity_kitchen_interface.xml" value="0.1546875" />
+        <entry key="..\:/Users/User/AndroidStudioProjects/RestoUp/app/src/main/res/layout/activity_login_options.xml" value="0.33" />
         <entry key="..\:/Users/User/AndroidStudioProjects/RestoUp/app/src/main/res/layout/activity_main.xml" value="0.25" />
+        <entry key="..\:/Users/User/AndroidStudioProjects/RestoUp/app/src/main/res/layout/activity_splash_screen.xml" value="0.12771739130434784" />
+        <entry key="..\:/Users/User/AndroidStudioProjects/RestoUp/app/src/main/res/layout/activity_waiter_interface.xml" value="0.1641337386018237" />
         <entry key="..\:/Users/User/AndroidStudioProjects/RestoUp/app/src/main/res/layout/main_menu.xml" value="0.22" />
-        <entry key="..\:/Users/User/AndroidStudioProjects/RestoUp/app/src/main/res/layout/sub_menu.xml" value="0.22" />
+        <entry key="..\:/Users/User/AndroidStudioProjects/RestoUp/app/src/main/res/layout/sub_menu.xml" value="0.33" />
+        <entry key="..\:/Users/User/AndroidStudioProjects/RestoUp/app/src/main/res/layout/table_name.xml" value="0.25" />
+        <entry key="..\:/Users/User/AndroidStudioProjects/RestoUp/app/src/main/res/layout/usernames_passwords.xml" value="0.1" />
+        <entry key="..\:/Users/User/AndroidStudioProjects/RestoUp/app/src/main/res/layout/waiter_view.xml" value="0.14" />
       </map>
     </option>
   </component>

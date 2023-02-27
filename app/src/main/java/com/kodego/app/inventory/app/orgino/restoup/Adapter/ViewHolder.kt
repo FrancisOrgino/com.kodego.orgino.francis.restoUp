@@ -1,2 +1,5 @@
-package com.kodego.app.inventory.app.orgino.restoup.Adapter 
+package com.kodego.app.inventory.app.orgino.restoup.Adapter
 
+class ViewHolder {
+
+}

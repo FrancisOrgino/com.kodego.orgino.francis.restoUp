@@ -3,6 +3,7 @@ package com.kodego.app.inventory.app.orgino.restoup
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.kodego.app.inventory.app.orgino.restoup.Adapter.MainAdapter
+import com.kodego.app.inventory.app.orgino.restoup.Adapter.MainAdapter.ViewHolder
 import com.kodego.app.inventory.app.orgino.restoup.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -14,6 +15,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.rvMain.adapter = MainAdapter()
+       // binding.rvMain.adapter = MainAdapter(listOf(ViewHolder))
     }
+
 }
