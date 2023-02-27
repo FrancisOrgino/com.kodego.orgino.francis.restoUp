@@ -2,6 +2,7 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id 'com.google.gms.google-services'
+    id 'org.jetbrains.kotlin.plugin.parcelize'
 }
 
 android {
@@ -15,6 +16,9 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        vectorDrawables {
+            useSupportLibrary true
+        }
     }
 
     buildFeatures{
@@ -38,6 +42,11 @@ android {
     }
     kotlinOptions {
         jvmTarget = '1.8'
+    }
+    packagingOptions {
+        resources {
+            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+        }
     }
 }
 
@@ -76,8 +85,8 @@ dependencies {
     debugImplementation "androidx.compose.ui:ui-test-manifest:1.3.3"
 
     //Material Compose
-    implementation "androidx.compose.material3:material3:1.1.0-alpha06"
-    implementation "androidx.compose.material3:material3-window-size-class:1.1.0-alpha06"
+    implementation "androidx.compose.material3:material3:1.1.0-alpha07"
+    implementation "androidx.compose.material3:material3-window-size-class:1.1.0-alpha07"
 
     //fix: Fix dependency resolution errors. || Duplicate class found
     constraints {

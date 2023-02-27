@@ -7,10 +7,7 @@ import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.firebase.auth.FirebaseUser
 import com.kodego.app.inventory.app.orgino.restoup.Data.User
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 
 class SplashScreen : AppCompatActivity() {
     lateinit var registeredUsers:MutableList<User>
@@ -20,25 +17,43 @@ class SplashScreen : AppCompatActivity() {
 
         if (auth.currentUser!=null) {
             lifecycleScope.launch {
-                registeredUsers = db.loadUsers(applicationContext)
-                delay(1000L)
+                db.loadRestaurantList(auth.currentUser!!.uid)
                 startActivityByUserType(auth.currentUser!!)
                 finish()
             }
         } else {
-            CoroutineScope(Dispatchers.Main).launch {
-                delay(1500L)
+            lifecycleScope.launch {
                 startActivity(Intent(this@SplashScreen, LoginOptionsActivity::class.java))
                 finish()
             }
         }
     }
-    private fun startActivityByUserType(user:FirebaseUser) {
-        for (registeredUser in registeredUsers) {
-            if (user!!.uid == registeredUser.uID && registeredUser.userType.toString() == "ADMIN") {
-                startActivity(Intent(this, MainInterface::class.java))
-                finish()
-            }
+    private suspend fun startActivityByUserType(user:FirebaseUser) {
+        val registeredUser = db.loadUserData(user.uid)
+        if (user.uid == registeredUser.uID && registeredUser.userType.toString() == "ADMIN") {
+            val intent = Intent(this, MainInterface::class.java)
+//                intent.putExtra("Logged User", registeredUser)
+            db.currentUser = registeredUser
+            startActivity(intent)
+            finish()
+        } else if (user.uid == registeredUser.uID && registeredUser.userType.toString() == "CASHIER") {
+            val intent = Intent(this, MainInterface::class.java)
+//                intent.putExtra("Logged User", registeredUser)
+            db.currentUser = registeredUser
+            startActivity(intent)
+            finish()
+        } else if (user.uid == registeredUser.uID && registeredUser.userType.toString() == "WAITER") {
+            val intent = Intent(this, MainInterface::class.java)
+//                intent.putExtra("Logged User", registeredUser)
+            db.currentUser = registeredUser
+            startActivity(intent)
+            finish()
+        } else if (user.uid == registeredUser.uID && registeredUser.userType.toString() == "KITCHENSTAFF") {
+            val intent = Intent(this, MainInterface::class.java)
+//                intent.putExtra("Logged User", registeredUser)
+            db.currentUser = registeredUser
+            startActivity(intent)
+            finish()
         }
     }
 
