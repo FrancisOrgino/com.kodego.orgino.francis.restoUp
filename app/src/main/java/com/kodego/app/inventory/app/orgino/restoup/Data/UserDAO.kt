@@ -5,6 +5,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import com.firebase.ui.database.SnapshotParser
+import com.google.android.material.tabs.TabLayout.Tab
 import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -15,6 +16,7 @@ import com.google.firebase.storage.ktx.storage
 import com.kodego.app.inventory.app.orgino.restoup.auth
 import com.kodego.app.inventory.app.orgino.restoup.db
 import kotlinx.coroutines.tasks.await
+import java.time.LocalDate
 
 
 class UserDAO {
@@ -23,41 +25,56 @@ class UserDAO {
     var storageReference = Firebase.storage("gs://resto-up.appspot.com").reference
     var ownedRestaurantsList = mutableSetOf<String>()
     var restaurantMenuCategoryList = mutableSetOf<String>()
+    lateinit var currentUser: User
 
+    fun clear() {
+        ownedRestaurantsList.clear()
+        restaurantMenuCategoryList.clear()
+    }
     fun addUser(uID:String, user: ConvertedUser) {
         user.uID = uID
         dbReference.child("User").child(uID).setValue(user)
     }
 
-    fun queryUserType(): Query {
-        return dbReference.child("User").orderByKey()
-    }
+    suspend fun loadUserData(uID: String):User {
+        val snapshot = dbReference.child("User").child(uID).get().await()
 
-    suspend fun loadUsers(context:Context):MutableList<User> {
-        var registeredUser = mutableListOf<User>()
-        val dbSnapshot = queryUserType().get().await()
-        for (snapshot in dbSnapshot.children) {
-            try {
-                registeredUser.add(
-                    User(
-                        snapshot.child("userName").value.toString(),
-                        snapshot.child("passWord").value.toString(),
-                        when (snapshot.child("userType").value.toString()) {
-                            "ADMIN" -> UserTypes.ADMIN
-                            "CASHIER" -> UserTypes.CASHIER
-                            "WAITER" -> UserTypes.WAITER
-                            "KITCHENSTAFF" -> UserTypes.KITCHENSTAFF
-                            "CUSTOMER" -> UserTypes.CUSTOMER
-                            else -> UserTypes.CUSTOMER
-                        },
-                        snapshot.child("uID").value.toString()
-                    )
+        return try {
+                User(
+                    snapshot.child("userName").value.toString(),
+                    snapshot.child("passWord").value.toString(),
+                    when (snapshot.child("userType").value.toString()) {
+                        "ADMIN" -> UserTypes.ADMIN
+                        else -> throw UserTypeException("Non-Admin")
+                    },
+                    snapshot.child("uID").value.toString(),
+                    snapshot.child("adminUID").value.toString()
                 )
-            } catch (e:Exception) {
-                Toast.makeText(context, "load users error", Toast.LENGTH_LONG).show()
-            }
+
+        } catch (e:UserTypeException) {
+            User(
+                snapshot.child("firstName").value.toString(),
+                snapshot.child("middleName").value.toString(),
+                snapshot.child("lastName").value.toString(),
+                try {
+                    snapshot.child("birthDate").value.toString().let { LocalDate.parse(it) }
+                } catch (e:Exception) { null },
+                snapshot.child("email").value.toString(),
+                snapshot.child("userName").value.toString(),
+                snapshot.child("passWord").value.toString(),
+                when (snapshot.child("userType").value.toString()) {
+                    "CASHIER" -> UserTypes.CASHIER
+                    "WAITER" -> UserTypes.WAITER
+                    "KITCHENSTAFF" -> UserTypes.KITCHENSTAFF
+                    "CUSTOMER" -> UserTypes.CUSTOMER
+                    else -> throw Exception("Load Users Exception")
+                },
+                snapshot.child("uID").value.toString(),
+                snapshot.child("adminUID").value.toString(),
+                snapshot.child("assignedRestaurant").value.toString()
+            )
         }
-        return  registeredUser
+
     }
     fun addRestaurant(name:String, address:String) {
         dbReference.child("Restaurant").child(auth.uid!!).child(name).setValue(Restaurant(name, address))
@@ -146,5 +163,10 @@ class UserDAO {
             val tag = "addMenuItem"
             Log.d(tag, errorMessage.toString())
         }
+    }
+
+    fun addTable(tableData:Table, adminUID: String) {
+        val pushKey = dbReference.child("Restaurant").child(adminUID).child(tableData.restaurantName).child("Table").push().key!!
+        dbReference.child("Restaurant").child(adminUID).child(tableData.restaurantName).child("Table").child(pushKey).setValue(tableData)
     }
 }

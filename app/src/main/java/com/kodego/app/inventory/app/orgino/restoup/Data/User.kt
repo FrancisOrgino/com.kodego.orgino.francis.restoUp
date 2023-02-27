@@ -1,6 +1,5 @@
 package com.kodego.app.inventory.app.orgino.restoup.Data
 
-import com.google.firebase.auth.FirebaseAuth
 import java.time.LocalDate
 
 data class User (
@@ -20,7 +19,11 @@ data class User (
     constructor(userName:String,
                 passWord:String,
                 userType:UserTypes,
-                providedUID:String) : this(userName, passWord, userType){this.uID=providedUID}
+                providedUID:String,
+                admin_UID:String) : this(userName, passWord, userType){
+                    this.uID = providedUID
+                    this.adminUID = admin_UID
+                }
 
     //Employee Constructor
     constructor(employeeFirstName:String,
@@ -31,16 +34,20 @@ data class User (
                 employeeUserName:String,
                 employeeInitialPassWord:String,
                 employeeUserType:UserTypes,
+                employeeProvidedUID:String,
                 employeeAdminUID:String,
                 employeeAssignedRestaurant: String) : this(employeeUserName, employeeInitialPassWord, employeeUserType) {
-                                    this.firstName = employeeFirstName
-                                    this.middleName = employeeMiddleName
-                                    this.lastName = employeeLastName
-                                    this.birthDate = employeeBirthDate
-                                    this.email = employeeEmail
-                                    this.adminUID = employeeAdminUID
-                                    this.assignedRestaurant = employeeAssignedRestaurant
-    }
+                    this.firstName = employeeFirstName
+                    this.middleName = employeeMiddleName
+                    this.lastName = employeeLastName
+                    this.birthDate = employeeBirthDate
+                    this.email = employeeEmail
+                    this.uID = employeeProvidedUID
+                    this.adminUID = employeeAdminUID
+                    this.assignedRestaurant = employeeAssignedRestaurant
+                }
+
+    constructor() : this("", "", UserTypes.CUSTOMER)
 }
 
 data class ConvertedUser (
@@ -76,6 +83,7 @@ data class ConvertedUser (
                                     this.assignedRestaurant = employeeAssignedRestaurant
     }
 }
+
 enum class UserTypes() {
     ADMIN,
     CASHIER,
