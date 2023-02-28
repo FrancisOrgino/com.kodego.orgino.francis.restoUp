@@ -10,6 +10,7 @@ data class MenuItem(
 ) {
     var itemImages:List<Uri>? = null
     var id:String? = null
+    var adminID:String? = null
 
     constructor(
         restaurant:String,
@@ -23,6 +24,22 @@ data class MenuItem(
         itemName,
         itemPrice,
     ) {this.itemImages = itemImages}
+
+    constructor(
+        restaurant:String,
+        category:String,
+        itemName:String,
+        itemPrice:Double,
+        itemImages:List<Uri>,
+        adminID:String
+    ):this(
+        restaurant,
+        category,
+        itemName,
+        itemPrice,
+    ) {
+        this.adminID = adminID
+        this.itemImages = itemImages}
 }
 
 data class ConvertedMenuItem(
@@ -30,5 +47,6 @@ data class ConvertedMenuItem(
     var category:String,
     var itemName:String,
     var itemPrice:Double,
-    var id:String
+    var id:String,
+    var adminID:String
 )
