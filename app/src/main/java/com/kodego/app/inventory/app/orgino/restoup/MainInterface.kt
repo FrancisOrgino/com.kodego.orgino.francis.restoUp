@@ -15,6 +15,8 @@ import androidx.navigation.ui.setupWithNavController
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.Navigation
+import com.google.firebase.FirebaseOptions
+import com.google.firebase.ktx.Firebase
 import com.kodego.app.inventory.app.orgino.restoup.Data.UserTypes
 import com.kodego.app.inventory.app.orgino.restoup.databinding.ActivityMainInterfaceBinding
 
@@ -39,9 +41,10 @@ class MainInterface : AppCompatActivity() {
 
         val drawerLayout: DrawerLayout = binding.drawerLayout
         val navView: NavigationView = binding.navView
+        //Programmatically hide menu items based on user
         when (db.currentUser.userType) {
             UserTypes.ADMIN -> {
-                /*do nothing*/
+                /* Do Nothing */
             }
             UserTypes.CASHIER -> {
                 navView.menu.removeItem(R.id.nav_home)
@@ -117,6 +120,11 @@ class MainInterface : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         val navController = findNavController(R.id.nav_host_fragment_content_main_interface)
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        db.loadRestaurantList(db.currentUser.adminUID!!)
     }
 }
 

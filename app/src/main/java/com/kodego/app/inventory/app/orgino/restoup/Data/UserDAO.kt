@@ -1,17 +1,21 @@
 package com.kodego.app.inventory.app.orgino.restoup.Data
 
+import android.app.Application
 import android.content.Context
 import android.util.Log
-import android.widget.Toast
-import androidx.lifecycle.MutableLiveData
-import com.firebase.ui.database.SnapshotParser
-import com.google.android.material.tabs.TabLayout.Tab
+import androidx.compose.ui.platform.LocalContext
+import com.google.firebase.FirebaseApp
+import com.google.firebase.FirebaseOptions
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.Query
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.ktx.app
+import com.google.firebase.ktx.initialize
 import com.google.firebase.storage.ktx.storage
 import com.kodego.app.inventory.app.orgino.restoup.auth
 import com.kodego.app.inventory.app.orgino.restoup.db
@@ -21,6 +25,13 @@ import java.time.LocalDate
 
 class UserDAO {
 
+    init {
+        try {
+            auth.currentUser?.let { loadRestaurantList(it.uid) }
+        } catch (e:Exception) {
+            //
+        }
+    }
     var dbReference = Firebase.database("https://resto-up-default-rtdb.asia-southeast1.firebasedatabase.app/").reference
     var storageReference = Firebase.storage("gs://resto-up.appspot.com").reference
     var ownedRestaurantsList = mutableSetOf<String>()
@@ -32,7 +43,6 @@ class UserDAO {
         restaurantMenuCategoryList.clear()
     }
     fun addUser(uID:String, user: ConvertedUser) {
-        user.uID = uID
         dbReference.child("User").child(uID).setValue(user)
     }
 
@@ -47,7 +57,7 @@ class UserDAO {
                         "ADMIN" -> UserTypes.ADMIN
                         else -> throw UserTypeException("Non-Admin")
                     },
-                    snapshot.child("uID").value.toString(),
+                    snapshot.child("uid").value.toString(),
                     snapshot.child("adminUID").value.toString()
                 )
 
@@ -69,7 +79,7 @@ class UserDAO {
                     "CUSTOMER" -> UserTypes.CUSTOMER
                     else -> throw Exception("Load Users Exception")
                 },
-                snapshot.child("uID").value.toString(),
+                snapshot.child("uid").value.toString(),
                 snapshot.child("adminUID").value.toString(),
                 snapshot.child("assignedRestaurant").value.toString()
             )
@@ -81,13 +91,17 @@ class UserDAO {
     }
 
     fun addEmployeeAccount(email:String, password:String, user:ConvertedUser) {
-        val originalUser = auth.currentUser
-        auth.createUserWithEmailAndPassword(email, password)
+        //add new employee account without logging out current admin user
+        //does this by initializing '(an emulated??) secondary app' that then gets deleted after it creates a new employee account
+        val authworker = FirebaseApp.initializeApp(FirebaseApp.getInstance().applicationContext,FirebaseApp.getInstance().options, "auth-worker")
+        val _authcreator = Firebase.auth(authworker)
+        _authcreator.createUserWithEmailAndPassword(email, password)
             .addOnSuccessListener { taskResult ->
                 val providedUID = taskResult.user!!.uid
-                user.uID = providedUID
+                user.uid = providedUID
                 addUser(providedUID, user)
-                auth.updateCurrentUser(originalUser!!)
+                _authcreator.signOut()
+                authworker.delete()
             }
             .addOnFailureListener { e:Exception ->
                 val errorMessage = e.message
@@ -121,25 +135,15 @@ class UserDAO {
     }
 
     fun loadRestaurantList (adminUID:String) {
-        dbReference.child("Restaurant").child(adminUID).addChildEventListener(object:ChildEventListener {
-            override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
-                snapshot.key?.let { ownedRestaurantsList.add(it) }
-            }
-
-            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
-                //
-            }
-
-            override fun onChildRemoved(snapshot: DataSnapshot) {
-                snapshot.key?.let { ownedRestaurantsList.remove(it) }
-            }
-
-            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {
-                //
+        dbReference.child("Restaurant").child(adminUID).addValueEventListener(object:ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                for (dataKey in snapshot.children) {
+                    ownedRestaurantsList.add(dataKey.key.toString())
+                }
             }
 
             override fun onCancelled(error: DatabaseError) {
-                //
+                //Do Nothing
             }
         })
     }

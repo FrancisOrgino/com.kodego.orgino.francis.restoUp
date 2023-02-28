@@ -7,7 +7,7 @@ data class User (
     var passWord:String,
     var userType:UserTypes
 ) {
-    var uID:String? = null
+    var uid:String? = null
     var firstName:String? = null
     var middleName:String? = null
     var lastName:String? = null
@@ -21,7 +21,7 @@ data class User (
                 userType:UserTypes,
                 providedUID:String,
                 admin_UID:String) : this(userName, passWord, userType){
-                    this.uID = providedUID
+                    this.uid = providedUID
                     this.adminUID = admin_UID
                 }
 
@@ -42,7 +42,7 @@ data class User (
                     this.lastName = employeeLastName
                     this.birthDate = employeeBirthDate
                     this.email = employeeEmail
-                    this.uID = employeeProvidedUID
+                    this.uid = employeeProvidedUID
                     this.adminUID = employeeAdminUID
                     this.assignedRestaurant = employeeAssignedRestaurant
                 }
@@ -55,7 +55,7 @@ data class ConvertedUser (
     var passWord:String,
     var userType:UserTypes
 ) {
-    var uID: String? = null
+    var uid: String? = null
     var firstName: String? = null
     var middleName: String? = null
     var lastName: String? = null
@@ -64,6 +64,14 @@ data class ConvertedUser (
     var adminUID: String? = null
     var assignedRestaurant: String? = null
 
+    constructor(userName:String,
+                passWord:String,
+                userType:UserTypes,
+                providedUID:String,
+                admin_UID:String) : this(userName, passWord, userType){
+        this.uid = providedUID
+        this.adminUID = admin_UID
+    }
     constructor(employeeFirstName:String,
                 employeeMiddleName:String,
                 employeeLastName:String?,

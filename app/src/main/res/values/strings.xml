@@ -12,10 +12,13 @@
     <string name="nav_header_subtitle">Run your Restaurant!</string>
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">My Profile</string>
-
+    <string name="cancel">Cancel</string>
     <string name="menu_home">Home</string>
     <string name="menu_take_an_order">Take an Order</string>
     <string name="menu_order_queue">Order Queue</string>
     <string name="menu_customer_checkout">Customer Checkout</string>
     <string name="title_activity_waiter_interface">WaiterInterface</string>
+    <string name="sign_up_header">Welcome Restaurateur!</string>
+    <string name="sign_up_message">Key in your email and provide a password for your RestoUp Account to start.</string>
+
 </resources>

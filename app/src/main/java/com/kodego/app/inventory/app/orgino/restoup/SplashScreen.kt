@@ -30,25 +30,25 @@ class SplashScreen : AppCompatActivity() {
     }
     private suspend fun startActivityByUserType(user:FirebaseUser) {
         val registeredUser = db.loadUserData(user.uid)
-        if (user.uid == registeredUser.uID && registeredUser.userType.toString() == "ADMIN") {
+        if (user.uid == registeredUser.uid && registeredUser.userType.toString() == "ADMIN") {
             val intent = Intent(this, MainInterface::class.java)
 //                intent.putExtra("Logged User", registeredUser)
             db.currentUser = registeredUser
             startActivity(intent)
             finish()
-        } else if (user.uid == registeredUser.uID && registeredUser.userType.toString() == "CASHIER") {
+        } else if (user.uid == registeredUser.uid && registeredUser.userType.toString() == "CASHIER") {
             val intent = Intent(this, MainInterface::class.java)
 //                intent.putExtra("Logged User", registeredUser)
             db.currentUser = registeredUser
             startActivity(intent)
             finish()
-        } else if (user.uid == registeredUser.uID && registeredUser.userType.toString() == "WAITER") {
+        } else if (user.uid == registeredUser.uid && registeredUser.userType.toString() == "WAITER") {
             val intent = Intent(this, MainInterface::class.java)
 //                intent.putExtra("Logged User", registeredUser)
             db.currentUser = registeredUser
             startActivity(intent)
             finish()
-        } else if (user.uid == registeredUser.uID && registeredUser.userType.toString() == "KITCHENSTAFF") {
+        } else if (user.uid == registeredUser.uid && registeredUser.userType.toString() == "KITCHENSTAFF") {
             val intent = Intent(this, MainInterface::class.java)
 //                intent.putExtra("Logged User", registeredUser)
             db.currentUser = registeredUser
