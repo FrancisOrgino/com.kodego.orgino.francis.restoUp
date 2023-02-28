@@ -1,5 +1,6 @@
 package com.kodego.app.inventory.app.orgino.restoup.Data
 
+import android.net.Uri
 import android.util.Log
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.ktx.auth
@@ -13,6 +14,7 @@ import com.google.firebase.storage.ktx.storage
 import com.kodego.app.inventory.app.orgino.restoup.auth
 import com.kodego.app.inventory.app.orgino.restoup.db
 import kotlinx.coroutines.tasks.await
+import java.net.URL
 import java.time.LocalDate
 
 
@@ -152,7 +154,7 @@ class UserDAO {
         dbReference.child("Restaurant").child(adminUID).child(menuItem.restaurant).child("Menu").child(pushKey).setValue(newMenuItem).addOnSuccessListener {
             menuItem.itemImages?.let {
                 for ((counter, uri) in it.withIndex()) {
-                    db.storageReference.child("Restaurant").child(adminUID).child(menuItem.restaurant).child("Menu").child(pushKey).child("$counter").putFile(uri)
+                    db.storageReference.child("Restaurant").child(adminUID).child(menuItem.restaurant).child("Menu").child(pushKey).child("$counter").putFile(uri).continueWith { db.storageReference.child("Restaurant").child(adminUID).child(menuItem.restaurant).child("Menu").child(pushKey).child("$counter").downloadUrl.continueWith { task -> dbReference.child("Restaurant").child(adminUID).child(menuItem.restaurant).child("Menu").child(pushKey).child("itemImageUrls").push().setValue(task.result.toString()) } }
                 }
             }
         }.addOnFailureListener { e:Exception ->
