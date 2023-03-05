@@ -1,7 +1,7 @@
 package com.kodego.app.inventory.app.orgino.restoup.Data
 
-import android.net.Uri
 import android.util.Log
+import androidx.core.net.toUri
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.ChildEventListener
@@ -14,7 +14,7 @@ import com.google.firebase.storage.ktx.storage
 import com.kodego.app.inventory.app.orgino.restoup.auth
 import com.kodego.app.inventory.app.orgino.restoup.db
 import kotlinx.coroutines.tasks.await
-import java.net.URL
+import okhttp3.internal.wait
 import java.time.LocalDate
 
 
@@ -31,7 +31,11 @@ class UserDAO {
     var storageReference = Firebase.storage("gs://resto-up.appspot.com").reference
     var ownedRestaurantsList = mutableSetOf<String>()
     var restaurantMenuCategoryList = mutableSetOf<String>()
+    var restaurantMenuList = mutableListOf<MenuItem>()
+    var restaurantTableDataList = mutableListOf<Table>()
+    var restaurantOrderList = mutableListOf<Order>()
     lateinit var currentUser: User
+    lateinit var serverDate: LocalDate
 
     fun clear() {
         ownedRestaurantsList.clear()
@@ -165,7 +169,82 @@ class UserDAO {
     }
 
     fun addTable(tableData:Table, adminUID: String) {
-        val pushKey = dbReference.child("Restaurant").child(adminUID).child(tableData.restaurantName).child("Table").push().key!!
-        dbReference.child("Restaurant").child(adminUID).child(tableData.restaurantName).child("Table").child(pushKey).setValue(tableData)
+        val pushKey = dbReference.child("Restaurant").child(adminUID).child(tableData.restaurant).child("Table").push().key!!
+        dbReference.child("Restaurant").child(adminUID).child(tableData.restaurant).child("Table").child(pushKey).setValue(tableData)
+    }
+
+    fun loadMenuItems(user:User) {
+        dbReference.child("Restaurant").child(user.adminUID.toString()).child(user.assignedRestaurant.toString()).child("Menu").addValueEventListener(object : ValueEventListener{
+            override fun onDataChange(snapshot: DataSnapshot) {
+                var menulist = mutableListOf<MenuItem>()
+                for (data in snapshot.children) {
+                    data?.let { menuItemSnapshot ->
+                        var menuItem = MenuItem(
+                            menuItemSnapshot.child("adminID").value.toString(),
+                            menuItemSnapshot.child("category").value.toString(),
+                            menuItemSnapshot.child("itemName").value.toString(),
+                            menuItemSnapshot.child("itemPrice").value.toString().toDouble(),
+                            menuItemSnapshot.child("id").value.toString(),
+                            menuItemSnapshot.child("adminID").value.toString(),
+                            mutableListOf(menuItemSnapshot.child("itemImageUrls").children.first().value.toString().toUri())
+                        )
+                        menulist.add(menuItem)
+                    }
+                }
+                restaurantMenuList = menulist
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                TODO("Not yet implemented")
+            }
+        })
+    }
+
+    fun loadTableData(user: User) {
+        dbReference.child("Restaurant").child(user.adminUID.toString()).child(user.assignedRestaurant.toString()).child("Table").addValueEventListener(object: ValueEventListener{
+            override fun onDataChange(snapshot: DataSnapshot) {
+                for (tableData in snapshot.children) {
+                    tableData?.let { restaurantTableDataList.add(
+                        Table(it.child("tableName").value.toString(), it.child("tableCapacity").value.toString().toInt(), it.child("restaurant").value.toString())
+                    ) }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                TODO("Not yet implemented")
+            }
+        })
+    }
+
+    fun addOrder(newOrder:Order, user: User) {
+        val pushKey = dbReference.child("Order").child(user.adminUID.toString()).child(user.assignedRestaurant.toString()).push().key
+        val convertedNewOrder = ConvertedOrder(
+            pushKey!!,
+            newOrder.table,
+            newOrder.customerID,
+            newOrder.orderStatus,
+            newOrder.restaurant,
+            newOrder.employeeID,
+            newOrder.userType,
+            newOrder.adminID
+        )
+
+        dbReference.child("Order").child(user.adminUID.toString()).child(user.assignedRestaurant.toString()).child(pushKey!!).setValue( convertedNewOrder )
+        newOrder.orderItems.forEach {
+            val orderPushkey = dbReference.child("Order").child(user.adminUID.toString()).child(user.assignedRestaurant.toString()).child(pushKey!!).child("orderItems").push().key
+            val orderItem = ConvertedMenuItem(it.key.restaurant, it.key.category, it.key.itemName, it.key.itemPrice, it.key.id!!, it.key.adminID!!, it.value, orderPushkey!!)
+            val orderItemImages = it.key.itemImages
+            dbReference.child("Order").child(user.adminUID.toString()).child(user.assignedRestaurant.toString()).child(pushKey!!).child("orderItems").child(orderPushkey!!).setValue(orderItem).addOnSuccessListener {
+                if (!orderItemImages.isNullOrEmpty()) {
+                    for (uri in orderItemImages) {
+                        dbReference.child("Order").child(user.adminUID.toString()).child(user.assignedRestaurant.toString()).child(pushKey!!).child("orderItems").child(orderPushkey!!).child("itemImageUrls").push().setValue(uri.toString())
+                    }
+                }
+            }
+        }
+    }
+
+    fun loadOrderData(user: User) {
+
     }
 }

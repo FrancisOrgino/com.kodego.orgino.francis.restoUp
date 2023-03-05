@@ -88,6 +88,11 @@ dependencies {
     implementation "androidx.compose.material3:material3:1.1.0-alpha07"
     implementation "androidx.compose.material3:material3-window-size-class:1.1.0-alpha07"
 
+    //COIL Dependencies (i.e. image Loading Library)
+    implementation "io.coil-kt:coil:2.2.2"
+    //Jetpack Compose extension library for COIL
+    implementation "io.coil-kt:coil-compose:2.2.2"
+
     //fix: Fix dependency resolution errors. || Duplicate class found
     constraints {
         implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.0") {

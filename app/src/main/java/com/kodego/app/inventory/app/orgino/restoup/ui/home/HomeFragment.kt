@@ -69,6 +69,7 @@ class HomeFragment : Fragment() {
 
 @Composable
 fun Home() {
+    db.loadRestaurantList(auth.uid!!)
     Surface(
         Modifier.fillMaxSize()
     ) {
@@ -505,7 +506,7 @@ fun SetupRestaurantMenu() {
     var menuItemCategory by remember {mutableStateOf(TextFieldValue(""))}
     var menuItemName by remember {mutableStateOf(TextFieldValue(""))}
     var menuItemPrice by remember {mutableStateOf(TextFieldValue(""))}
-    var menuItemImage = remember {mutableStateOf<List<Uri>?>(null)}
+    var menuItemImage = remember {mutableStateOf<MutableList<Uri>?>(null)}
     db.loadRestaurantList(auth.uid!!)
     val restaurantOptions by remember {mutableStateOf(db.ownedRestaurantsList)}
 
@@ -613,6 +614,7 @@ fun SetupRestaurantMenu() {
                         }
                     }
 
+                    //Menu Category Picker
                     Text (text = "Item Menu Category", modifier = Modifier.padding(10.dp, 10.dp, 0.dp))
                     db.loadMenuCategoryList(selectedRestaurant.text, auth.uid!!)
                     val context = LocalContext.current
@@ -762,11 +764,14 @@ fun SetupRestaurantMenu() {
                         keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                         onValueChange = {
                             try {
-                                it.text.toDouble()
+                                if (it.text.isNotEmpty()) {
+                                    it.text.toDouble()
+                                }
                                 menuItemPrice = it
                             } catch (e:java.lang.NumberFormatException) {
                                 Toast.makeText(priceContext, "Please enter valid price value.", Toast.LENGTH_LONG).show()
                             }
+                            menuItemPrice = it
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -784,7 +789,7 @@ fun SetupRestaurantMenu() {
                             imageData.value = null
                         } else {
                             imageData.value = it
-                            menuItemImage.value = it
+                            menuItemImage.value = it.toMutableList()
                         }
                     })
                     if (imageData.value==null) {
@@ -965,16 +970,18 @@ fun AddATable(){
 
                     Spacer(modifier = Modifier.width(15.dp))
                     Text (text = "Table Capacity", modifier =  Modifier.padding(10.dp, 0.dp))
-                    val priceContext = LocalContext.current
+                    val tableContext = LocalContext.current
                     OutlinedTextField(
                         value = tableCapacity,
                         keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                         onValueChange = {
                             try {
-                                it.text.toInt()
+                                if (it.text.isNotEmpty()) {
+                                    it.text.toInt()
+                                }
                                 tableCapacity = it
                             } catch (e:java.lang.NumberFormatException) {
-                                Toast.makeText(priceContext, "Only whole number inputs are allowed here.", Toast.LENGTH_LONG).show()
+                                Toast.makeText(tableContext, "Only whole number inputs are allowed here.", Toast.LENGTH_LONG).show()
                             }
                         },
                         modifier = Modifier
