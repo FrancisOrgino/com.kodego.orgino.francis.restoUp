@@ -11,6 +11,7 @@ data class MenuItem(
     var itemImages:MutableList<Uri>? = null
     var id:String? = null
     var adminID:String? = null
+    var orderItemID = ""
 
     constructor(
         restaurant:String,
@@ -42,6 +43,26 @@ data class MenuItem(
         this.id = id
         this.adminID = adminID
         this.itemImages = _itemImage
+    }
+    constructor(
+        restaurant:String,
+        category:String,
+        itemName:String,
+        itemPrice:Double,
+        id:String,
+        adminID:String,
+        _itemImage:MutableList<Uri>?,
+        _orderItemID: String
+    ):this(
+        restaurant,
+        category,
+        itemName,
+        itemPrice,
+    ) {
+        this.id = id
+        this.adminID = adminID
+        this.itemImages = _itemImage
+        this.orderItemID = _orderItemID
     }
 }
 

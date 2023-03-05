@@ -245,6 +245,61 @@ class UserDAO {
     }
 
     fun loadOrderData(user: User) {
+        dbReference.child("Order").child(user.adminUID.toString()).child(user.assignedRestaurant.toString()).orderByKey().limitToLast(500).addValueEventListener(object : ValueEventListener{
+            override fun onDataChange(snapshot: DataSnapshot) {
+                var orderList = mutableListOf<Order>()
+                for (orderData in snapshot.children) {
+                    var _orderItems = mutableMapOf<MenuItem, Int>()
+                    orderData.child("orderItems").children.forEach { orderItemSnapshot ->
+                        _orderItems[MenuItem(
+                            orderItemSnapshot.child("adminID").value.toString(),
+                            orderItemSnapshot.child("category").value.toString(),
+                            orderItemSnapshot.child("itemName").value.toString(),
+                            orderItemSnapshot.child("itemPrice").value.toString()
+                                .toDouble(),
+                            orderItemSnapshot.child("id").value.toString(),
+                            orderItemSnapshot.child("adminID").value.toString(),
+                            mutableListOf(
+                                orderItemSnapshot.child("itemImageUrls").children.first().value.toString()
+                                    .toUri()
+                            ),
+                            orderItemSnapshot.child("orderItemID").value.toString()
+                        )] = orderItemSnapshot.child("orderQuantity").value.toString()
+                            .toInt()
+                    }
 
+                    var _order = Order(
+                        orderData.child("orderID").value.toString(),
+                        orderData.child("table").value.toString(),
+                        orderData.child("customerID").value.toString(),
+                        _orderItems,
+                        when (orderData.child("orderStatus").value.toString()){
+                            "SentToKitchen" -> OrderStatus.SentToKitchen
+                            "Cooking" -> OrderStatus.Cooking
+                            "ReadyToServe" -> OrderStatus.ReadyToServe
+                            "Served" -> OrderStatus.Served
+                            else -> throw OrderStatusException("OrderStatus not found on loadOrderData")
+                        },
+                        orderData.child("restaurant").value.toString(),
+                        orderData.child("employeeID").value.toString(),
+                        when (orderData.child("userType").value.toString()){
+                            "ADMIN" -> UserTypes.ADMIN
+                            "CASHIER" -> UserTypes.CASHIER
+                            "WAITER" -> UserTypes.WAITER
+                            "KITCHENSTAFF" -> UserTypes.KITCHENSTAFF
+                            "CUSTOMER" -> UserTypes.CUSTOMER
+                            else -> throw UserTypeException("Usertype Not Found on loadOrderData")
+                        },
+                        orderData.child("adminID").value.toString(),
+                        orderData.child("orderNotes").value.toString()
+                    )
+                    orderList.add(_order)
+                }
+                restaurantOrderList = orderList
+            }
+            override fun onCancelled(error: DatabaseError) {
+                //Do Nothing
+            }
+        })
     }
 }

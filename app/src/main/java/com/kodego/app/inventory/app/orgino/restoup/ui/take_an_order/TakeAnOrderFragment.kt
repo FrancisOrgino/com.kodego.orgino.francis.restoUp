@@ -72,10 +72,17 @@ class TakeAnOrderFragment : Fragment() {
 
 @Composable
 fun TakeAnOrder() {
+    var _assignedRestaurant by remember {
+        mutableStateOf( db.currentUser.assignedRestaurant )
+    }
+    if (!_assignedRestaurant.isNullOrEmpty()) {
+        db.loadOrderData(db.currentUser)
+    }
     if(db.currentUser.userType==UserTypes.ADMIN){
         db.loadRestaurantList(db.currentUser.adminUID.toString())
     }
-    val orderList by remember { derivedStateOf { db.restaurantOrderList } }
+
+    val orderList by remember { mutableStateOf ( db.restaurantOrderList ) }
     Surface(
         modifier = Modifier
             .padding(8.dp)
@@ -150,6 +157,7 @@ fun CreateOrderDialog() {
                                     db.currentUser.assignedRestaurant = selectionOption
                                     db.loadTableData(db.currentUser)
                                     db.loadMenuItems(db.currentUser)
+                                    db.loadOrderData(db.currentUser)
                                     restaurantPickerExpanded = false
                                     adminUser.value = false
                                 },
@@ -213,7 +221,8 @@ fun CreateOrderDialog() {
                                             db.currentUser.assignedRestaurant.toString(),
                                             db.currentUser.uid.toString(),
                                             db.currentUser.userType,
-                                            db.currentUser.adminUID.toString()
+                                            db.currentUser.adminUID.toString(),
+                                            orderNotes.text
                                         )
                                         db.addOrder(_newOrder, db.currentUser)
                                         openCreateOrderDialog.value = false
@@ -543,66 +552,65 @@ fun OrderRow(menu:MenuItem, quantity:Int){
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OrderCard(order:Order) {
-//    var order:Order = Order("dtgsergtsertert", "12", "", mutableMapOf(MenuItem("Test Restaurant", "Pork", "Afritada", 258.00,"sefgsergsergsergser", "sergsergstgser",
-//        mutableListOf("https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/%ED%97%A8%EB%A6%AC%28Henry%29%2CAmerican_Eagale_FanSign_%28cropped%29.jpg/220px-%ED%97%A8%EB%A6%AC%28Henry%29%2CAmerican_Eagale_FanSign_%28cropped%29.jpg".toUri()) ) to 1), OrderStatus.SentToKitchen, "Test Restaurant", "vxdfgdfgsdfgsd", UserTypes.WAITER, "rfsergsertsertser"
-//    )
-    AppTheme() {
-        Surface(
-            color = colorResource(id = R.color.md_theme_light_primaryContainer),
-            shape = ShapeDefaults.ExtraSmall,
-            modifier = Modifier
-                .padding(3.dp)
-                .fillMaxWidth(),
-            onClick = { /*TODO*/ }) {
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
+    if (!db.currentUser.assignedRestaurant.isNullOrEmpty()){
+        AppTheme() {
+            Surface(
+                color = colorResource(id = R.color.md_theme_light_primaryContainer),
+                shape = ShapeDefaults.ExtraSmall,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-                    .padding(5.dp)
-            ) {
-                Surface(
-                    color = colorResource(id = R.color.md_theme_dark_secondaryContainer),
+                    .padding(3.dp)
+                    .fillMaxWidth(),
+                onClick = { /*TODO*/ }) {
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier
-                        .size(100.dp)
-                        .clip(CircleShape)) {
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .padding(5.dp)
+                ) {
+                    Surface(
+                        color = colorResource(id = R.color.md_theme_dark_secondaryContainer),
+                        modifier = Modifier
+                            .size(100.dp)
+                            .clip(CircleShape)) {
+                        Column(
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            val fs = if (order.table.length<=2) {70.sp} else {
+                                abs(70-((order.table.length-2)*15)).sp
+                            }
+                            Text(
+                                color = colorResource(id = R.color.md_theme_dark_onSecondaryContainer),
+                                fontSize = fs,
+                                fontWeight = FontWeight.Bold,
+                                text = order.table,
+                            )
+                        }
+                    }
+
+                    val orderItemNames = order.orderItems.keys.map { it.itemName }
+                    Spacer(modifier = Modifier.width(5.dp))
+                    Column(){
+                        Text(text = "ID: ${order.orderID}")
+                        Text(text = "Status: ${order.orderStatus.toString()}")
+                        Text(text = orderItemNames.toString())
+                    }
+
+                    val orderValue = order.orderItems.map { it.key.itemPrice * it.value }.sum()
+                    val vfs = if (orderValue.toString().length<=2) {70.sp} else {
+                        abs(70-((orderValue.toString().length-2)*15)).sp
+                    }
+                    Spacer(modifier = Modifier.width(5.dp))
                     Column(
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        val fs = if (order.table.length<=2) {70.sp} else {
-                            abs(70-((order.table.length-2)*15)).sp
-                        }
+                    ){
+                        Text(text = "Value:")
                         Text(
-                            color = colorResource(id = R.color.md_theme_dark_onSecondaryContainer),
-                            fontSize = fs,
-                            fontWeight = FontWeight.Bold,
-                            text = order.table,
-                        )
+                            fontSize = vfs,
+                            text = orderValue.toString())
                     }
-                }
-
-                val orderItemNames = order.orderItems.keys.map { it.itemName }
-                Spacer(modifier = Modifier.width(5.dp))
-                Column(){
-                    Text(text = "ID: ${order.orderID}")
-                    Text(text = "Status: ${order.orderStatus.toString()}")
-                    Text(text = orderItemNames.toString())
-                }
-
-                val orderValue = order.orderItems.map { it.key.itemPrice * it.value }.sum()
-                val vfs = if (orderValue.toString().length<=2) {70.sp} else {
-                    abs(70-((orderValue.toString().length-2)*15)).sp
-                }
-                Spacer(modifier = Modifier.width(5.dp))
-                Column(
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ){
-                    Text(text = "Value:")
-                    Text(
-                        fontSize = vfs,
-                        text = orderValue.toString())
                 }
             }
         }

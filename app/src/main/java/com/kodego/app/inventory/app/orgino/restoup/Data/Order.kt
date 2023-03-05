@@ -9,7 +9,8 @@ data class Order (
     var restaurant:String,
     var employeeID:String,
     var userType:UserTypes,
-    var adminID:String
+    var adminID:String,
+    var orderNotes:String
 ) {
     //app entry
     constructor(
@@ -19,7 +20,8 @@ data class Order (
         _restaurant:String,
         _employeeID:String,
         _userType:UserTypes,
-        _adminID:String
+        _adminID:String,
+        _orderNotes:String
     ) : this(
         "",
         _table,
@@ -29,7 +31,8 @@ data class Order (
         _restaurant,
         _employeeID,
         _userType,
-        _adminID
+        _adminID,
+        _orderNotes
     )
 }
 
