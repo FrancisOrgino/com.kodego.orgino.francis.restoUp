@@ -1,5 +1,6 @@
 package com.kodego.app.inventory.app.orgino.restoup.Data
 
+import android.net.Uri
 import android.util.Log
 import androidx.core.net.toUri
 import com.google.firebase.FirebaseApp
@@ -178,18 +179,20 @@ class UserDAO {
             override fun onDataChange(snapshot: DataSnapshot) {
                 var menulist = mutableListOf<MenuItem>()
                 for (data in snapshot.children) {
-                    data?.let { menuItemSnapshot ->
                         var menuItem = MenuItem(
-                            menuItemSnapshot.child("adminID").value.toString(),
-                            menuItemSnapshot.child("category").value.toString(),
-                            menuItemSnapshot.child("itemName").value.toString(),
-                            menuItemSnapshot.child("itemPrice").value.toString().toDouble(),
-                            menuItemSnapshot.child("id").value.toString(),
-                            menuItemSnapshot.child("adminID").value.toString(),
-                            mutableListOf(menuItemSnapshot.child("itemImageUrls").children.first().value.toString().toUri())
+                            data.child("adminID").value.toString(),
+                            data.child("category").value.toString(),
+                            data.child("itemName").value.toString(),
+                            data.child("itemPrice").value.toString().toDouble(),
+                            data.child("id").value.toString(),
+                            data.child("adminID").value.toString(),
+                            try{
+                                mutableListOf(data.child("itemImageUrls").children.first().value.toString().toUri())
+                            } catch (e:Exception) {
+                                mutableListOf()
+                            }
                         )
                         menulist.add(menuItem)
-                    }
                 }
                 restaurantMenuList = menulist
             }
@@ -203,11 +206,14 @@ class UserDAO {
     fun loadTableData(user: User) {
         dbReference.child("Restaurant").child(user.adminUID.toString()).child(user.assignedRestaurant.toString()).child("Table").addValueEventListener(object: ValueEventListener{
             override fun onDataChange(snapshot: DataSnapshot) {
+                var _restaurantTableDataList = mutableListOf<Table>()
                 for (tableData in snapshot.children) {
-                    tableData?.let { restaurantTableDataList.add(
-                        Table(it.child("tableName").value.toString(), it.child("tableCapacity").value.toString().toInt(), it.child("restaurant").value.toString())
-                    ) }
+                    tableData?.let {
+                        val table = Table(it.child("tableName").value.toString(), it.child("tableCapacity").value.toString().toInt(), it.child("restaurant").value.toString())
+                        _restaurantTableDataList.add(table)
+                    }
                 }
+                restaurantTableDataList = _restaurantTableDataList
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -259,10 +265,13 @@ class UserDAO {
                                 .toDouble(),
                             orderItemSnapshot.child("id").value.toString(),
                             orderItemSnapshot.child("adminID").value.toString(),
-                            mutableListOf(
-                                orderItemSnapshot.child("itemImageUrls").children.first().value.toString()
-                                    .toUri()
-                            ),
+                            try {
+                                mutableListOf(orderItemSnapshot.child("itemImageUrls").children.first().value.toString()
+                                    .toUri())
+                            } catch (e:Exception) {
+                                mutableListOf()
+                            }
+                            ,
                             orderItemSnapshot.child("orderItemID").value.toString()
                         )] = orderItemSnapshot.child("orderQuantity").value.toString()
                             .toInt()
