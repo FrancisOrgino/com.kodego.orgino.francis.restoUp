@@ -1,15 +1,24 @@
 buildscript {
-    dependencies {
-        classpath 'com.google.gms:google-services:4.3.15'
+  //  < <<<<<< HEAD
+//    dependencies {
+//        classpath 'com.google.gms:google-services:4.3.15'
+//            //    === === =
+//                ext {
+//                    compose_version = '1.2.0'
+//                }
+        dependencies {
+            classpath 'com.google.gms:google-services:4.3.10'
+                 //   >>> >>> > 63f 7135d 7677646 c1c16b0ac29c9e52320ea19af
+        }
     }
-}// Top-level build file where you can add configuration options common to all sub-projects/modules.
-plugins {
-    id 'com.android.application' version '7.2.2' apply false
-    id 'com.android.library' version '7.2.2' apply false
-    id 'org.jetbrains.kotlin.android' version '1.7.10' apply false
-    id 'com.google.gms.google-services' version '4.3.15' apply false
-}
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+    plugins {
+        id 'com.android.application' version '7.2.2' apply false
+        id 'com.android.library' version '7.2.2' apply false
+        id 'org.jetbrains.kotlin.android' version '1.7.10' apply false
+        id 'com.google.gms.google-services' version '4.3.15' apply false
+    }
 
-task clean(type: Delete) {
-    delete rootProject.buildDir
-}
+    task clean(type: Delete) {
+        delete rootProject.buildDir
+    }

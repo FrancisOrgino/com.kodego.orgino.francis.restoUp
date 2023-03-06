@@ -3,6 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.kodego.app.inventory.app.orgino.restoup">
 
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -11,17 +15,17 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.RestoUp"
+        android:theme="@style/AppTheme"
         tools:targetApi="31">
         <activity
-            android:name=".AdminInterface"
-            android:exported="false" />
+            android:name=".MainInterface"
+            android:exported="true"
+            android:label="@string/title_activity_main_interface"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name=".KitchenInterface"
-            android:exported="false" />
-        <activity
-            android:name=".Model.WaiterInterface"
-            android:exported="false" />
+            android:name=".LoginOptionsActivity"
+            android:exported="true" />
         <activity
             android:name=".SplashScreen"
             android:exported="true">
@@ -31,27 +35,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".AdminAddTable"
-            android:exported="false" />
-        <activity
-            android:name=".AdminCreateUser"
-            android:exported="false" />
-        <activity
-            android:name=".AdminAddItem"
-            android:exported="false" />
-        <activity
-            android:name=".AdminLogin"
-            android:exported="false" />
-        <activity
-            android:name=".LoginOptionsActivity"
-            android:exported="false" />
-        <activity
-            android:name=".Model.CashierInterface"
-            android:exported="false" />
-        <activity
-            android:name=".MainActivity"
-            android:exported="true" />
     </application>
 
 </manifest>
