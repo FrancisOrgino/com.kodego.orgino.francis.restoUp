@@ -28,7 +28,6 @@ import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
@@ -43,10 +42,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.fragment.app.Fragment
-import com.example.compose.AppTheme
+import com.kodego.app.inventory.app.orgino.restoup.ui.theme.AppTheme
 import com.kodego.app.inventory.app.orgino.restoup.Data.*
 import com.kodego.app.inventory.app.orgino.restoup.auth
 import com.kodego.app.inventory.app.orgino.restoup.db
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -60,6 +60,7 @@ class HomeFragment : Fragment() {
         return ComposeView(requireContext()).apply {
             setContent {
                 AppTheme {
+
                     Home()
                 }
             }
@@ -69,7 +70,9 @@ class HomeFragment : Fragment() {
 
 @Composable
 fun Home() {
-    db.loadRestaurantList(auth.uid!!)
+    LaunchedEffect(true){
+        db.loadRestaurantList(auth.uid!!)
+    }
     Surface(
         Modifier.fillMaxSize()
     ) {
@@ -96,6 +99,7 @@ fun Home() {
 }
 @Composable
 fun AddNewRestaurant() {
+    var scope = rememberCoroutineScope()
     var openAddNewRestaurantDialog = remember {mutableStateOf(false)}
     var newRestaurantName by remember { mutableStateOf(TextFieldValue("")) }
     var newRestaurantAddress by remember { mutableStateOf(TextFieldValue("")) }
@@ -137,9 +141,13 @@ fun AddNewRestaurant() {
                         TextButton(
                             enabled = enableSaveButton,
                             onClick = {
-                                db.addRestaurant(newRestaurantName.text, newRestaurantAddress.text)
-                                db.ownedRestaurantsList.add(newRestaurantName.text)
-                                openAddNewRestaurantDialog.value = false
+                                scope.launch {
+                                    db.addRestaurant(
+                                        newRestaurantName.text,
+                                        newRestaurantAddress.text
+                                    )
+                                }
+                                    openAddNewRestaurantDialog.value = false
                             }) {
                             Icon(
                                 Icons.Outlined.Add,
@@ -192,6 +200,7 @@ fun AddNewRestaurant() {
 @Composable
 fun AddNewEmployee() {
     val openAddNewEmployeeDialog = remember { mutableStateOf(false) }
+    var scope = rememberCoroutineScope()
     var newEmployeeFirstName by remember {mutableStateOf(TextFieldValue(""))}
     var newEmployeeMiddleName by remember {mutableStateOf(TextFieldValue(""))}
     var newEmployeeLastName by remember {mutableStateOf(TextFieldValue(""))}
@@ -201,9 +210,7 @@ fun AddNewEmployee() {
     var newEmployeeEmail by remember {mutableStateOf(TextFieldValue(""))}
     var selectedRestaurant by remember {mutableStateOf(TextFieldValue(""))}
     var newEmployeeInitialPassword by remember {mutableStateOf(TextFieldValue(""))}
-    db.loadRestaurantList(auth.uid!!)
-    val restaurantOptions by remember {mutableStateOf(db.ownedRestaurantsList)}
-
+    var restaurantOptions by remember {mutableStateOf(db.ownedRestaurantsList)}
     if (openAddNewEmployeeDialog.value) {
         Dialog(
             onDismissRequest = {openAddNewEmployeeDialog.value = false},
@@ -247,19 +254,21 @@ fun AddNewEmployee() {
                                     newEmployeeInitialPassword.text.isNotEmpty() &&
                                     newEmployeeRole != null,
                             onClick = {
-                                val newEmployee = ConvertedUser(
-                                    newEmployeeFirstName.text,
-                                    newEmployeeMiddleName.text,
-                                    newEmployeeLastName.text,
-                                    newEmployeeBirthdate,
-                                    newEmployeeEmail.text,
-                                    newEmployeeEmail.text,
-                                    newEmployeeInitialPassword.text,
-                                    newEmployeeRole!!,
-                                    newEmployeeEmployerUID,
-                                    selectedRestaurant.text
-                                )
-                                db.addEmployeeAccount(newEmployeeEmail.text, newEmployeeInitialPassword.text, newEmployee)
+                                scope.launch {
+                                    val newEmployee = ConvertedUser(
+                                        newEmployeeFirstName.text,
+                                        newEmployeeMiddleName.text,
+                                        newEmployeeLastName.text,
+                                        newEmployeeBirthdate,
+                                        newEmployeeEmail.text,
+                                        newEmployeeEmail.text,
+                                        newEmployeeInitialPassword.text,
+                                        newEmployeeRole!!,
+                                        newEmployeeEmployerUID,
+                                        selectedRestaurant.text
+                                    )
+                                    db.addEmployeeAccount(newEmployeeEmail.text, newEmployeeInitialPassword.text, newEmployee)
+                                }
                                 openAddNewEmployeeDialog.value = false
                             }) {
                             Icon(
@@ -305,7 +314,7 @@ fun AddNewEmployee() {
                                 restaurantPickerExpanded = false
                             }
                         ) {
-                            restaurantOptions.forEach { selectionOption ->
+                            restaurantOptions.value.forEach { selectionOption ->
                                 DropdownMenuItem(
                                     onClick = {
                                         selectedRestaurantText = selectionOption
@@ -489,7 +498,7 @@ fun AddNewEmployee() {
     }
     FilledTonalButton(
         modifier = Modifier.width(258.dp),
-        enabled = restaurantOptions.isNotEmpty(),
+        enabled = restaurantOptions.value.isNotEmpty(),
         onClick =  { openAddNewEmployeeDialog.value = true },
         colors = ButtonDefaults.filledTonalButtonColors()) {
         Text(text = "Add Employee Account")
@@ -502,12 +511,12 @@ fun AddNewEmployee() {
 fun SetupRestaurantMenu() {
     var openSetupRestaurantMenuDialog = remember { mutableStateOf(false) }
     var openCreateMenuCategoryDialog = remember { mutableStateOf(false) }
+    var scope = rememberCoroutineScope()
     var selectedRestaurant by remember {mutableStateOf(TextFieldValue(""))}
     var menuItemCategory by remember {mutableStateOf(TextFieldValue(""))}
     var menuItemName by remember {mutableStateOf(TextFieldValue(""))}
     var menuItemPrice by remember {mutableStateOf(TextFieldValue(""))}
     var menuItemImage = remember {mutableStateOf<MutableList<Uri>?>(null)}
-    db.loadRestaurantList(auth.uid!!)
     val restaurantOptions by remember {mutableStateOf(db.ownedRestaurantsList)}
 
     if (openSetupRestaurantMenuDialog.value) {
@@ -548,12 +557,14 @@ fun SetupRestaurantMenu() {
                                     menuItemName.text.isNotEmpty() &&
                                     menuItemPrice.text.isNotEmpty(),
                             onClick = {
-                                val newMenuItemData = if (menuItemImage.value==null) {
-                                    MenuItem(selectedRestaurant.text, menuItemCategory.text, menuItemName.text, menuItemPrice.text.toDouble())
-                                } else {
-                                    MenuItem(selectedRestaurant.text, menuItemCategory.text, menuItemName.text, menuItemPrice.text.toDouble(), menuItemImage.value!!)
+                                scope.launch {
+                                    val newMenuItemData = if (menuItemImage.value==null) {
+                                        MenuItem(selectedRestaurant.text, menuItemCategory.text, menuItemName.text, menuItemPrice.text.toDouble())
+                                    } else {
+                                        MenuItem(selectedRestaurant.text, menuItemCategory.text, menuItemName.text, menuItemPrice.text.toDouble(), menuItemImage.value!!)
+                                    }
+                                    db.addMenuItem(newMenuItemData, auth.uid!!)
                                 }
-                                db.addMenuItem(newMenuItemData, auth.uid!!)
                                 openSetupRestaurantMenuDialog.value = false
                             })
                         {
@@ -601,7 +612,7 @@ fun SetupRestaurantMenu() {
                                 restaurantPickerExpanded = false
                             }
                         ) {
-                            restaurantOptions.forEach { selectionOption ->
+                            restaurantOptions.value.forEach { selectionOption ->
                                 DropdownMenuItem(
                                     onClick = {
                                         selectedRestaurantText = selectionOption
@@ -655,7 +666,7 @@ fun SetupRestaurantMenu() {
                                 menuCategoryOptionsExpanded = false
                             }
                         ) {
-                            menuCategoryOptions.forEach { selectionOption ->
+                            menuCategoryOptions.value.forEach { selectionOption ->
                                 DropdownMenuItem(
                                     onClick = {
                                         selectedMenuCategoryOptionText = selectionOption
@@ -708,9 +719,11 @@ fun SetupRestaurantMenu() {
                                                 TextButton(
                                                     enabled = newMenuCategory.text.isNotEmpty(),
                                                     onClick = {
-                                                        db.addMenuCategory(newMenuCategory.text, selectedRestaurant.text, auth.uid!!)
-                                                        menuItemCategory = newMenuCategory
-                                                        selectedMenuCategoryOptionText = newMenuCategory.text
+                                                        scope.launch {
+                                                            db.addMenuCategory(newMenuCategory.text, selectedRestaurant.text, auth.uid!!)
+                                                            menuItemCategory = newMenuCategory
+                                                            selectedMenuCategoryOptionText = newMenuCategory.text
+                                                        }
                                                         menuCategoryOptionsExpanded = false
                                                         openCreateMenuCategoryDialog.value = false
                                                     })
@@ -794,7 +807,8 @@ fun SetupRestaurantMenu() {
                     })
                     if (imageData.value==null) {
                         Button(
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .fillMaxWidth()
                                 .padding(10.dp, 0.dp),
                             onClick = {
                                 launcher.launch("image/*")
@@ -828,7 +842,7 @@ fun SetupRestaurantMenu() {
     }
     FilledTonalButton(
         modifier = Modifier.width(258.dp),
-        enabled = restaurantOptions.isNotEmpty(),
+        enabled = restaurantOptions.value.isNotEmpty(),
         onClick =  { openSetupRestaurantMenuDialog.value = true },
         colors = ButtonDefaults.filledTonalButtonColors()) {
         Text(text = "Setup Restaurant Menu")
@@ -851,10 +865,10 @@ fun MenuImage(imageBitmap: Bitmap) {
 @Composable
 fun AddATable(){
     var openAddATableDialog = remember { mutableStateOf(false) }
+    var scope = rememberCoroutineScope()
     var selectedRestaurant by remember {mutableStateOf(TextFieldValue(""))}
     var tableName by remember {mutableStateOf(TextFieldValue(""))}
     var tableCapacity by remember {mutableStateOf(TextFieldValue(""))}
-    db.loadRestaurantList(auth.uid!!)
     val restaurantOptions by remember {mutableStateOf(db.ownedRestaurantsList)}
 
     if (openAddATableDialog.value) {
@@ -894,8 +908,10 @@ fun AddATable(){
                                     tableCapacity.text.isNotEmpty() &&
                                     tableName.text.isNotEmpty(),
                             onClick = {
-                                val newTable = Table(tableName.text, tableCapacity.text.toInt(), selectedRestaurant.text)
-                                db.addTable(newTable, auth.uid!!)
+                                scope.launch {
+                                    val newTable = Table(tableName.text, tableCapacity.text.toInt(), selectedRestaurant.text)
+                                    db.addTable(newTable, auth.uid!!)
+                                }
                                 openAddATableDialog.value = false
                             })
                         {
@@ -942,7 +958,7 @@ fun AddATable(){
                                 restaurantPickerExpanded = false
                             }
                         ) {
-                            restaurantOptions.forEach { selectionOption ->
+                            restaurantOptions.value.forEach { selectionOption ->
                                 DropdownMenuItem(
                                     onClick = {
                                         selectedRestaurantText = selectionOption
@@ -995,7 +1011,7 @@ fun AddATable(){
     }
     FilledTonalButton(
         modifier = Modifier.width(258.dp),
-        enabled = restaurantOptions.isNotEmpty(),
+        enabled = restaurantOptions.value.isNotEmpty(),
         onClick =  { openAddATableDialog.value = true },
         colors = ButtonDefaults.filledTonalButtonColors()) {
         Text(text = "Setup Restaurant Table Data")

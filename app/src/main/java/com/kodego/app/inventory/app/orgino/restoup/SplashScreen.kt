@@ -17,7 +17,6 @@ class SplashScreen : AppCompatActivity() {
 
         if (auth.currentUser!=null) {
             lifecycleScope.launch {
-                db.loadRestaurantList(auth.currentUser!!.uid)
                 startActivityByUserType(auth.currentUser!!)
                 finish()
             }

@@ -2,6 +2,10 @@ package com.kodego.app.inventory.app.orgino.restoup.Data
 
 import android.net.Uri
 import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.core.net.toUri
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.ktx.auth
@@ -30,17 +34,17 @@ class UserDAO {
     }
     var dbReference = Firebase.database("https://resto-up-default-rtdb.asia-southeast1.firebasedatabase.app/").reference
     var storageReference = Firebase.storage("gs://resto-up.appspot.com").reference
-    var ownedRestaurantsList = mutableSetOf<String>()
-    var restaurantMenuCategoryList = mutableSetOf<String>()
-    var restaurantMenuList = mutableListOf<MenuItem>()
-    var restaurantTableDataList = mutableListOf<Table>()
-    var restaurantOrderList = mutableListOf<Order>()
+    var ownedRestaurantsList = mutableStateOf(mutableListOf<String>())
+    var restaurantMenuCategoryList = mutableStateOf(mutableListOf<String>())
+    var restaurantMenuList = mutableStateOf(mutableListOf<MenuItem>())
+    var restaurantTableDataList = mutableStateOf(mutableListOf<Table>())
+    var restaurantOrderList = mutableStateOf(mutableListOf<Order>())
     lateinit var currentUser: User
     lateinit var serverDate: LocalDate
 
     fun clear() {
-        ownedRestaurantsList.clear()
-        restaurantMenuCategoryList.clear()
+        ownedRestaurantsList.value.clear()
+        restaurantMenuCategoryList.value.clear()
     }
     fun addUser(uID:String, user: ConvertedUser) {
         dbReference.child("User").child(uID).setValue(user)
@@ -111,21 +115,13 @@ class UserDAO {
     }
 
     fun loadMenuCategoryList (restaurantName:String, adminUID:String) {
-        dbReference.child("Restaurant").child(adminUID).child(restaurantName).child("MenuCategory").addChildEventListener(object:ChildEventListener {
-            override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
-                snapshot.child("MenuCategoryItem").value?.let { restaurantMenuCategoryList.add(it.toString()) }
-            }
-
-            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
-                //
-            }
-
-            override fun onChildRemoved(snapshot: DataSnapshot) {
-                snapshot.child("MenuCategoryItem").value?.let { restaurantMenuCategoryList.remove(it.toString()) }
-            }
-
-            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {
-                //
+        dbReference.child("Restaurant").child(adminUID).child(restaurantName).child("MenuCategory").addValueEventListener(object:ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                var _restaurantMenuCategoryList = mutableListOf<String>()
+                for (data in snapshot.children) {
+                    _restaurantMenuCategoryList.add(data.child("MenuCategoryItem").value.toString())
+                }
+                restaurantMenuCategoryList.value = _restaurantMenuCategoryList
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -137,9 +133,11 @@ class UserDAO {
     fun loadRestaurantList (adminUID:String) {
         dbReference.child("Restaurant").child(adminUID).addValueEventListener(object:ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
+                var _ownedRestaurantsList = mutableListOf<String>()
                 for (dataKey in snapshot.children) {
-                    ownedRestaurantsList.add(dataKey.key.toString())
+                    _ownedRestaurantsList.add(dataKey.key.toString())
                 }
+                ownedRestaurantsList.value = _ownedRestaurantsList
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -194,11 +192,11 @@ class UserDAO {
                         )
                         menulist.add(menuItem)
                 }
-                restaurantMenuList = menulist
+                restaurantMenuList.value = menulist
             }
 
             override fun onCancelled(error: DatabaseError) {
-                TODO("Not yet implemented")
+                //
             }
         })
     }
@@ -213,11 +211,11 @@ class UserDAO {
                         _restaurantTableDataList.add(table)
                     }
                 }
-                restaurantTableDataList = _restaurantTableDataList
+                restaurantTableDataList.value = _restaurantTableDataList
             }
 
             override fun onCancelled(error: DatabaseError) {
-                TODO("Not yet implemented")
+                //
             }
         })
     }
@@ -304,7 +302,7 @@ class UserDAO {
                     )
                     orderList.add(_order)
                 }
-                restaurantOrderList = orderList
+                restaurantOrderList.value = orderList
             }
             override fun onCancelled(error: DatabaseError) {
                 //Do Nothing
