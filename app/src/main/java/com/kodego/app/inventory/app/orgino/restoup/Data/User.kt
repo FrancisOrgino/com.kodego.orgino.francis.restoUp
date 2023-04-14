@@ -7,6 +7,7 @@ data class User (
     var passWord:String,
     var userType:UserTypes
 ) {
+
     var uid:String? = null
     var firstName:String? = null
     var middleName:String? = null

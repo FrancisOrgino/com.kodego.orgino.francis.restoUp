@@ -58,12 +58,12 @@ import java.lang.NumberFormatException
 
 
 class CustomerCheckoutFragment : Fragment() {
-   // private var _binding: FragmentCustomerCheckoutBinding? = null
+    // private var _binding: FragmentCustomerCheckoutBinding? = null
 
 
     // This property is only valid between onCreateView and
     // onDestroyView.
-  //  private val binding get() = _binding!!
+    //  private val binding get() = _binding!!
 
     class CheckOutAnOrderFragment : Fragment() {
         lateinit var binding: FragmentCustomerCheckoutBinding
