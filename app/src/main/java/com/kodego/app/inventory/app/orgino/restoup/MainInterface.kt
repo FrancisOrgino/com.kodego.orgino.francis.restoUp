@@ -14,11 +14,13 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.Navigation
 import com.google.firebase.FirebaseOptions
 import com.google.firebase.ktx.Firebase
 import com.kodego.app.inventory.app.orgino.restoup.Data.UserTypes
 import com.kodego.app.inventory.app.orgino.restoup.databinding.ActivityMainInterfaceBinding
+import kotlinx.coroutines.launch
 
 class MainInterface : AppCompatActivity() {
 
@@ -121,10 +123,4 @@ class MainInterface : AppCompatActivity() {
         val navController = findNavController(R.id.nav_host_fragment_content_main_interface)
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
-
-    override fun onStart() {
-        super.onStart()
-        db.loadRestaurantList(db.currentUser.adminUID!!)
-    }
 }
-

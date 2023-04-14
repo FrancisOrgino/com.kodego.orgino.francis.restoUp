@@ -8,13 +8,11 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
-import com.example.compose.md_theme_light_background
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.kodego.app.inventory.app.orgino.restoup.Data.*
 import com.kodego.app.inventory.app.orgino.restoup.databinding.ActivityLoginOptionsBinding
 import com.kodego.app.inventory.app.orgino.restoup.databinding.SignUpDialogBinding
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 var auth: FirebaseAuth = FirebaseAuth.getInstance()
@@ -32,7 +30,6 @@ class LoginOptionsActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             if (loggedUser!=null) {
-                db.loadRestaurantList(auth.currentUser!!.uid)
                 startActivityByUserType(loggedUser)
             }
         }

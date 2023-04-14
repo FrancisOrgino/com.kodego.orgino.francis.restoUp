@@ -24,36 +24,31 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Constraints
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.example.compose.AppTheme
+import com.kodego.app.inventory.app.orgino.restoup.ui.theme.AppTheme
 import com.kodego.app.inventory.app.orgino.restoup.Data.MenuItem
 import com.kodego.app.inventory.app.orgino.restoup.Data.Order
-import com.kodego.app.inventory.app.orgino.restoup.Data.OrderStatus
 import com.kodego.app.inventory.app.orgino.restoup.Data.UserTypes
 import com.kodego.app.inventory.app.orgino.restoup.R
 import com.kodego.app.inventory.app.orgino.restoup.db
+import kotlinx.coroutines.launch
 import java.lang.Math.abs
+import java.lang.NumberFormatException
 
 class TakeAnOrderFragment : Fragment() {
     override fun onCreateView(
@@ -92,7 +87,7 @@ fun TakeAnOrder() {
             item {
                 CreateOrderDialog()
             }
-            items (orderList) {order ->
+            items (orderList.value) {order ->
                 OrderCard(order)
             }
         }
@@ -107,16 +102,17 @@ fun CreateOrderDialog() {
     db.loadTableData(db.currentUser)
     db.loadMenuItems(db.currentUser)
     var openCreateOrderDialog = remember { mutableStateOf(false) }
-    var adminUser = remember { mutableStateOf(db.currentUser.assignedRestaurant.isNullOrEmpty()) }
+    var adminUser by remember { mutableStateOf(db.currentUser.assignedRestaurant.isNullOrEmpty()) }
+    var scope = rememberCoroutineScope()
     val dialogTitle = "Create A New Order"
     var orderNotes by remember { mutableStateOf(TextFieldValue("")) }
     var selectedTable by remember { mutableStateOf(TextFieldValue("")) }
     lateinit var orderItem:MenuItem
     var orderItemList by remember { mutableStateOf(mutableMapOf<MenuItem, Int>()) }
     AppTheme {
-        if(adminUser.value){
+        if(adminUser){
             Dialog(
-                onDismissRequest = {adminUser.value = false}) {
+                onDismissRequest = {adminUser = false}) {
                 //RestaurantPicker
                 Text (text = "Currently managing this restaurant:", modifier = Modifier.padding(10.dp, 10.dp, 0.dp))
                 var restaurantPickerExpanded by remember { mutableStateOf(false) }
@@ -150,16 +146,18 @@ fun CreateOrderDialog() {
                             restaurantPickerExpanded = false
                         }
                     ) {
-                        restaurantOptions.forEach { selectionOption ->
+                        restaurantOptions.value.forEach { selectionOption ->
                             DropdownMenuItem(
                                 onClick = {
-                                    selectedRestaurantText = selectionOption
-                                    db.currentUser.assignedRestaurant = selectionOption
-                                    db.loadTableData(db.currentUser)
-                                    db.loadMenuItems(db.currentUser)
-                                    db.loadOrderData(db.currentUser)
+                                    scope.launch {
+                                        selectedRestaurantText = selectionOption
+                                        db.currentUser.assignedRestaurant = selectionOption
+                                        db.loadTableData(db.currentUser)
+                                        db.loadMenuItems(db.currentUser)
+                                        db.loadOrderData(db.currentUser)
+                                    }
                                     restaurantPickerExpanded = false
-                                    adminUser.value = false
+                                    adminUser = false
                                 },
                                 text = { Text(text = selectionOption) }
                             )
@@ -214,17 +212,19 @@ fun CreateOrderDialog() {
                                 TextButton(
                                     enabled = orderItemList.isNotEmpty() && selectedTable.text.isNotEmpty(),
                                     onClick = {
-                                        val _newOrder = Order(
-                                            selectedTable.text,
-                                            "",
-                                            orderItemList,
-                                            db.currentUser.assignedRestaurant.toString(),
-                                            db.currentUser.uid.toString(),
-                                            db.currentUser.userType,
-                                            db.currentUser.adminUID.toString(),
-                                            orderNotes.text
-                                        )
-                                        db.addOrder(_newOrder, db.currentUser)
+                                        scope.launch {
+                                            val _newOrder = Order(
+                                                selectedTable.text,
+                                                "",
+                                                orderItemList,
+                                                db.currentUser.assignedRestaurant.toString(),
+                                                db.currentUser.uid.toString(),
+                                                db.currentUser.userType,
+                                                db.currentUser.adminUID.toString(),
+                                                orderNotes.text
+                                            )
+                                            db.addOrder(_newOrder, db.currentUser)
+                                        }
                                         openCreateOrderDialog.value = false
                                     })
                                 {
@@ -274,7 +274,7 @@ fun CreateOrderDialog() {
                                         tablePickerExpanded = false
                                     }
                                 ) {
-                                    tableOptions.forEach { selectionOption ->
+                                    tableOptions.value.forEach { selectionOption ->
                                         DropdownMenuItem(
                                             onClick = {
                                                 selectedTableText = selectionOption.tableName
@@ -336,7 +336,7 @@ fun CreateOrderDialog() {
                                                 modifier = Modifier.aspectRatio(1F/1.5F, true),
                                                 columns = GridCells.Fixed(3),
                                             ){
-                                                items(menuOfferings) {menuOffering ->
+                                                items(menuOfferings.value) {menuOffering ->
                                                     Card(
                                                         onClick = {
                                                             orderItem = menuOffering
@@ -491,7 +491,7 @@ fun CreateOrderDialog() {
                                                                 it.text.toInt()
                                                             }
                                                             orderItemAmount = it
-                                                        } catch (e:java.lang.NumberFormatException){
+                                                        } catch (e: NumberFormatException){
                                                             Toast.makeText(orderItemDialogContext, "Please enter valid order quantity.", Toast.LENGTH_LONG).show()
                                                         }
                                                     },
@@ -555,7 +555,7 @@ fun OrderCard(order:Order) {
     if (!db.currentUser.assignedRestaurant.isNullOrEmpty()){
         AppTheme() {
             Surface(
-                color = colorResource(id = R.color.md_theme_light_primaryContainer),
+                color = MaterialTheme.colorScheme.surfaceTint,
                 shape = ShapeDefaults.ExtraSmall,
                 modifier = Modifier
                     .padding(3.dp)
@@ -569,7 +569,7 @@ fun OrderCard(order:Order) {
                         .padding(5.dp)
                 ) {
                     Surface(
-                        color = colorResource(id = R.color.md_theme_dark_secondaryContainer),
+                        color = MaterialTheme.colorScheme.inverseSurface,
                         modifier = Modifier
                             .size(100.dp)
                             .clip(CircleShape)) {
@@ -577,11 +577,14 @@ fun OrderCard(order:Order) {
                             verticalArrangement = Arrangement.Center,
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            val fs = if (order.table.length<=2) {70.sp} else {
-                                abs(70-((order.table.length-2)*15)).sp
+                            val fs = if (order.table.toString().length<=2) {70.sp}
+                            else if ((order.table.toString().length==3) ||(order.table.toString().length==4)) {
+                                abs(70-((order.table.toString().length-2)*15)).sp
+                            } else {
+                                25.sp
                             }
                             Text(
-                                color = colorResource(id = R.color.md_theme_dark_onSecondaryContainer),
+                                softWrap = true,
                                 fontSize = fs,
                                 fontWeight = FontWeight.Bold,
                                 text = order.table,
@@ -598,17 +601,16 @@ fun OrderCard(order:Order) {
                     }
 
                     val orderValue = order.orderItems.map { it.key.itemPrice * it.value }.sum()
-                    val vfs = if (orderValue.toString().length<=2) {70.sp} else {
-                        abs(70-((orderValue.toString().length-2)*15)).sp
-                    }
                     Spacer(modifier = Modifier.width(5.dp))
                     Column(
+                        modifier = Modifier.fillMaxHeight(),
                         verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
+                        horizontalAlignment = Alignment.Start
                     ){
                         Text(text = "Value:")
                         Text(
-                            fontSize = vfs,
+                            softWrap = true,
+                            fontWeight = FontWeight.Bold,
                             text = orderValue.toString())
                     }
                 }

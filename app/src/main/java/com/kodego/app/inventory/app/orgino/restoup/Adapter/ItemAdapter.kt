@@ -18,9 +18,8 @@ class ItemAdapter(var itemList: MutableList<ItemList>): RecyclerView.Adapter<Ite
 
     override fun onBindViewHolder(holder: ItemListViewHolder, position: Int) {
         holder.binding.apply {
-            tvSubMenuItemCategory.text = itemList[position].category
-            tvSubItemName.text = itemList[position].itemName
-            tvSubItemPrice.text = itemList[position].itemPrice.toString().toInt().toString()
+            tvTableName.text = itemList[position].category
+            tvItemPrice.text = itemList[position].itemPrice.toString().toInt().toString()
 
         }
     }
