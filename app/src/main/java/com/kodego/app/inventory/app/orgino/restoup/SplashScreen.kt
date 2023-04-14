@@ -10,7 +10,7 @@ import com.kodego.app.inventory.app.orgino.restoup.Data.User
 import kotlinx.coroutines.*
 
 class SplashScreen : AppCompatActivity() {
-    lateinit var registeredUsers:MutableList<User>
+   // lateinit var registeredUsers:MutableList<User>
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash_screen)

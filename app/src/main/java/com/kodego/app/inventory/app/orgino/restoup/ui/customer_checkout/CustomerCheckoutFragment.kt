@@ -246,10 +246,10 @@ class CustomerCheckoutFragment : Fragment() {
                                             {
                                                 Icon(
                                                     Icons.Outlined.Add,
-                                                    contentDescription = "Save $dialogTitle Data."
+                                                    contentDescription = "Check Out $dialogTitle Data."
                                                 )
                                                 Text(
-                                                    text = "Save",
+                                                    text = "Check Out",
                                                     modifier = Modifier.wrapContentSize(Alignment.Center)
                                                 )
                                             }
