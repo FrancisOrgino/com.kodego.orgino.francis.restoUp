@@ -7,10 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import com.kodego.app.inventory.app.orgino.restoup.R
 import com.kodego.app.inventory.app.orgino.restoup.databinding.FragmentCustomerCheckoutBinding
-import com.kodego.app.inventory.app.orgino.restoup.databinding.FragmentOrderQueueBinding
-import com.kodego.app.inventory.app.orgino.restoup.ui.order_queue.OrderQueueViewModel
 
 class CustomerCheckoutFragment : Fragment() {
 
