@@ -3,6 +3,7 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/User/AndroidStudioProjects/RestoUp/app/src/main/res/drawable/baseline_update_24.xml" value="0.1" />
         <entry key="..\:/Users/User/AndroidStudioProjects/RestoUp/app/src/main/res/drawable/ic_baseline_delete_24.xml" value="0.1305" />
         <entry key="..\:/Users/User/AndroidStudioProjects/RestoUp/app/src/main/res/layout/activity_admin_add_item.xml" value="0.25" />
         <entry key="..\:/Users/User/AndroidStudioProjects/RestoUp/app/src/main/res/layout/activity_admin_add_table.xml" value="0.15" />

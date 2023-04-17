@@ -34,6 +34,8 @@ data class Order (
         _adminID,
         _orderNotes
     )
+
+
 }
 
 //db push helper
@@ -50,9 +52,24 @@ data class ConvertedOrder(
 
 }
 
-enum class OrderStatus() {
-    SentToKitchen,
-    Cooking,
-    ReadyToServe,
-    Served
+enum class OrderStatus(val label:String) {
+    SentToKitchen("Sent to Kitchen"),
+    Cooking("Cooking"),
+    ReadyToServe("Ready To Serve"),
+    Served("Served")
+}
+
+fun cloneOrder(anOrder : Order):Order{
+    return Order(
+        anOrder.orderID,
+        anOrder.table,
+        anOrder.customerID,
+        anOrder.orderItems,
+        anOrder.orderStatus,
+        anOrder.restaurant,
+        anOrder.employeeID,
+        anOrder.userType,
+        anOrder.adminID,
+        anOrder.orderNotes
+    )
 }

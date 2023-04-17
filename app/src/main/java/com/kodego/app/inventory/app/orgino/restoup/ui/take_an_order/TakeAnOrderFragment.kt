@@ -5,16 +5,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.compose.foundation.*
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.Add
@@ -24,26 +24,31 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import coil.compose.AsyncImage
+import coil.compose.AsyncImagePainter
+import coil.request.ErrorResult
 import coil.request.ImageRequest
+import com.kodego.app.inventory.app.orgino.restoup.Data.*
 import com.kodego.app.inventory.app.orgino.restoup.ui.theme.AppTheme
-import com.kodego.app.inventory.app.orgino.restoup.Data.MenuItem
-import com.kodego.app.inventory.app.orgino.restoup.Data.Order
-import com.kodego.app.inventory.app.orgino.restoup.Data.UserTypes
 import com.kodego.app.inventory.app.orgino.restoup.R
 import com.kodego.app.inventory.app.orgino.restoup.db
 import kotlinx.coroutines.launch
@@ -348,25 +353,27 @@ fun CreateOrderDialog() {
                                                             .padding(5.dp)
                                                             .wrapContentSize(Alignment.Center)
                                                     ) {
-                                                        menuOffering.itemImages?.let {
-                                                            AsyncImage(
-                                                                model = ImageRequest.Builder(LocalContext.current)
-                                                                    .data(it[0].toString())
-                                                                    .crossfade(true)
-                                                                    .build(),
-                                                                placeholder = painterResource(id = R.drawable.logo),
-                                                                contentDescription = null,
-                                                                contentScale = ContentScale.Crop,
-                                                                modifier = Modifier
-                                                                    .aspectRatio(1f)
-                                                                    .padding(
-                                                                        0.dp,
-                                                                        3.dp,
-                                                                        0.dp,
-                                                                        3.dp
-                                                                    )
-                                                                    .clip(ShapeDefaults.ExtraSmall))
-                                                        }
+
+                                                        AsyncImage(
+                                                            model = ImageRequest.Builder(LocalContext.current)
+                                                                .data(menuOffering.itemImages?.first().toString())
+                                                                .crossfade(true)
+                                                                .build(),
+                                                            fallback = painterResource(id = R.drawable.logo),
+                                                            error = painterResource(id = R.drawable.logo),
+                                                            placeholder = painterResource(id = R.drawable.logo),
+                                                            contentDescription = null,
+                                                            contentScale = ContentScale.Crop,
+                                                            modifier = Modifier
+                                                                .aspectRatio(1f)
+                                                                .padding(
+                                                                    0.dp,
+                                                                    3.dp,
+                                                                    0.dp,
+                                                                    3.dp
+                                                                )
+                                                                .clip(ShapeDefaults.ExtraSmall)
+                                                        )
                                                         Text(
                                                             text = menuOffering.itemName,
                                                             textAlign = TextAlign.Center,
@@ -549,18 +556,31 @@ fun OrderRow(menu:MenuItem, quantity:Int){
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun OrderCard(order:Order) {
+    var showOrderDetailsDialog = remember{ mutableStateOf(false) }
+    var showEditOrderDialog = remember{ mutableStateOf(false) }
     if (!db.currentUser.assignedRestaurant.isNullOrEmpty()){
         AppTheme() {
             Surface(
                 color = MaterialTheme.colorScheme.surfaceTint,
                 shape = ShapeDefaults.ExtraSmall,
                 modifier = Modifier
+                    .combinedClickable(
+                        interactionSource = MutableInteractionSource(),
+                        indication = LocalIndication.current,
+                        enabled = true,
+                        onClickLabel = "Open order detail dialog.",
+                        role = null,
+                        onLongClickLabel = "",
+                        onLongClick = {},
+                        onDoubleClick = { showEditOrderDialog.value = true },
+                        onClick = { showOrderDetailsDialog.value = true }
+                    )
                     .padding(3.dp)
-                    .fillMaxWidth(),
-                onClick = { /*TODO*/ }) {
+                    .fillMaxWidth()
+            ) {
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier
@@ -615,6 +635,391 @@ fun OrderCard(order:Order) {
                     }
                 }
             }
+
+
+        }
+    }
+    if (showOrderDetailsDialog.value) {
+        OrderDetailsDialog(showOrderDetailsDialog, order)
+    }
+
+    if (showEditOrderDialog.value) {
+        EditOrderDialog(showEditOrderDialog, order)
+    }
+}
+
+
+@Composable
+fun OrderDetailsDialog (showOrderDetailsDialog:MutableState<Boolean>, order:Order) {
+    Dialog(
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+        onDismissRequest = { showOrderDetailsDialog.value = false }) {
+        Surface(
+            shape = ShapeDefaults.Small,
+            color = MaterialTheme.colorScheme.surfaceVariant,
+            modifier = Modifier.wrapContentSize()) {
+            Column(
+                verticalArrangement = Arrangement.Top,
+                modifier = Modifier
+                    .fillMaxSize(0.95F)
+            ){
+                Row(
+                    Modifier
+                        .height(IntrinsicSize.Min)
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    IconButton(onClick = { showOrderDetailsDialog.value = false }) {
+                        Icon(
+                            Icons.Outlined.ArrowBack,
+                            contentDescription = "Close order detail view."
+                        )
+                    }
+                    Text(
+                        text = "Order ID: ${order.orderID}",
+                        modifier = Modifier
+                            .wrapContentWidth(Alignment.CenterHorizontally)
+                            .align(Alignment.CenterVertically)
+                    )
+                }
+                Row(
+                    modifier = Modifier
+                        .padding(8.dp, 0.dp)
+                        .height(IntrinsicSize.Min)
+                        .fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        letterSpacing = 2.sp,
+                        fontSize = 8.em,
+                        fontWeight = FontWeight.Bold,
+                        text = order.table
+                    )
+                    Column (
+                        horizontalAlignment = Alignment.Start
+                    ){
+                        var totalPrice = 0.00
+
+                        for (menuItem in order.orderItems) {
+                            totalPrice += (menuItem.key.itemPrice*menuItem.value)
+                        }
+                        Text(text = "Total Value:")
+                        Text(
+                            fontSize = 5.em,
+                            fontWeight = FontWeight.ExtraBold,
+                            text = totalPrice.toString())
+                    }
+                }
+                //menu items
+                for (orderItem in order.orderItems) {
+                    OrderItemRow(orderItem.key, orderItem.value)
+                }
+                //Order Details
+                if (!(order.orderNotes.isNullOrEmpty()) || order.orderNotes != "null"){
+                    Text(
+                        modifier = Modifier.padding(8.dp, 0.dp),
+                        text = "Order Notes")
+                    OutlinedTextField(
+                        readOnly = true,
+                        shape = ShapeDefaults.Small,
+                        value = TextFieldValue(order.orderNotes),
+                        onValueChange = {  },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                            .padding(8.dp, 0.dp)
+                    )
+                }
+
+                //Order Status
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp, 0.dp),
+                    textAlign = TextAlign.Center,
+                    text = order.orderStatus.label)
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@Composable
+fun EditOrderDialog (showEditOrderDialog:MutableState<Boolean>, order:Order){
+    var scope = rememberCoroutineScope()
+    var _order = cloneOrder(order)
+    Dialog(
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+        onDismissRequest = { showEditOrderDialog.value = false }) {
+        Surface(
+            shape = ShapeDefaults.Small,
+            color = MaterialTheme.colorScheme.surfaceVariant,
+            modifier = Modifier.wrapContentSize()) {
+            Column(
+                verticalArrangement = Arrangement.Top,
+                modifier = Modifier
+                    .fillMaxSize(0.95F)
+            ){
+                Row(
+                    Modifier
+                        .height(IntrinsicSize.Min)
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    IconButton(onClick = { showEditOrderDialog.value = false }) {
+                        Icon(
+                            Icons.Outlined.ArrowBack,
+                            contentDescription = "Close order detail view."
+                        )
+                    }
+                    Text(
+                        text = "Order ID: ${_order.orderID}",
+                        modifier = Modifier
+                            .wrapContentWidth(Alignment.CenterHorizontally)
+                            .align(Alignment.CenterVertically)
+                    )
+                    TextButton(
+                        modifier = Modifier.wrapContentWidth(Alignment.CenterHorizontally, true),
+                        enabled = true,
+                        onClick = {
+                            scope.launch {
+                                /*ToDo*/
+                            }
+                            showEditOrderDialog.value = false
+                        }) {
+                        Icon(
+                            ImageVector.vectorResource(id = R.drawable.baseline_update_24),
+                            contentDescription = "Update order data."
+                        )
+                        Text(
+                            text = "Update",
+                            modifier = Modifier.wrapContentSize(Alignment.Center)
+                        )
+                    }
+                }
+                Row(
+                    modifier = Modifier
+                        .padding(8.dp, 0.dp)
+                        .height(IntrinsicSize.Min)
+                        .fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        letterSpacing = 2.sp,
+                        fontSize = 8.em,
+                        fontWeight = FontWeight.Bold,
+                        text = _order.table
+                    )
+                    Column (
+                        horizontalAlignment = Alignment.Start
+                    ){
+                        var totalPrice = 0.00
+
+                        for (menuItem in _order.orderItems) {
+                            totalPrice += (menuItem.key.itemPrice*menuItem.value)
+                        }
+                        Text(text = "Total Value:")
+                        Text(
+                            fontSize = 5.em,
+                            fontWeight = FontWeight.ExtraBold,
+                            text = totalPrice.toString())
+                    }
+                }
+                //menu items
+                for (orderItem in _order.orderItems) {
+                    OrderItemRow(
+                        orderItem.key,
+                        orderItem.value,
+                        _order,
+                        Modifier.combinedClickable(
+                            interactionSource = MutableInteractionSource(),
+                            indication = LocalIndication.current,
+                            enabled = true,
+                            onClickLabel = "Open order detail dialog.",
+                            role = null,
+                            onLongClickLabel = "",
+                            onLongClick = {  },
+                            onDoubleClick = {  },
+                            onClick = {  }
+                        ))
+                }
+                //Order Details
+                Text(
+                    modifier = Modifier.padding(8.dp, 0.dp),
+                    text = "Order Notes")
+                OutlinedTextField(
+                    readOnly = true,
+                    shape = ShapeDefaults.Small,
+                    value = TextFieldValue(_order.orderNotes),
+                    onValueChange = {
+                        _order.orderNotes = it.text
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .padding(8.dp, 0.dp)
+                )
+
+                //Order Status
+                Text (text = "Set Order Status (currently: ${_order.orderStatus.label})", modifier = Modifier.padding(8.dp, 0.dp))
+
+                var orderStatusPickerExpanded by remember { mutableStateOf(false) }
+                var selectedOrderStatusText by remember { mutableStateOf("")}
+                var orderStatusOptions = when(db.currentUser.userType) {
+                    UserTypes.ADMIN -> listOf(OrderStatus.SentToKitchen.label, OrderStatus.Cooking.label, OrderStatus.ReadyToServe.label, OrderStatus.Served.label)
+                    UserTypes.CASHIER -> listOf(OrderStatus.Served.label)
+                    UserTypes.WAITER -> listOf(OrderStatus.SentToKitchen.label, OrderStatus.Served.label)
+                    UserTypes.KITCHENSTAFF -> listOf(OrderStatus.Cooking.label, OrderStatus.ReadyToServe.label)
+                    UserTypes.CUSTOMER -> listOf(OrderStatus.Served.label)
+                }
+                ExposedDropdownMenuBox(
+                    expanded = orderStatusPickerExpanded,
+                    onExpandedChange = {
+                        orderStatusPickerExpanded = !orderStatusPickerExpanded
+                    }
+                ) {
+                    OutlinedTextField(
+                        readOnly = true,
+                        value = selectedOrderStatusText,
+                        onValueChange = {  },
+                        shape = ShapeDefaults.Small,
+                        label = { Text(text = "Set Order Status") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor()
+                            .padding(10.dp, 0.dp, 10.dp, 10.dp),
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(
+                                expanded = orderStatusPickerExpanded
+                            )
+                        },
+                        colors = ExposedDropdownMenuDefaults.textFieldColors()
+                    )
+                    ExposedDropdownMenu(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp, 0.dp),
+                        expanded = orderStatusPickerExpanded,
+                        onDismissRequest = {
+                            orderStatusPickerExpanded = false
+                        }
+                    ) {
+                        orderStatusOptions.forEach { selectionOption ->
+                            DropdownMenuItem(
+                                onClick = {
+                                    selectedOrderStatusText = selectionOption
+                                    _order.orderStatus = when (selectionOption) {
+                                        OrderStatus.SentToKitchen.label -> OrderStatus.SentToKitchen
+                                        OrderStatus.Cooking.label ->OrderStatus.Cooking
+                                        OrderStatus.ReadyToServe.label -> OrderStatus.ReadyToServe
+                                        OrderStatus.Served.label -> OrderStatus.Served
+                                        else -> {throw OrderStatusException("Order Status Error on EditOrderDialog")}
+                                    }
+                                    orderStatusPickerExpanded = false
+                                },
+                                text = { Text(text = selectionOption) }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun OrderItemRow(menuItem:MenuItem, quantity: Int){
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier
+            .padding(8.dp, 0.dp)
+            .height(55.dp)
+            .fillMaxWidth()
+    ) {
+        Row(
+        ) {
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(menuItem.itemImages?.first() .toString())
+                    .crossfade(true)
+                    .build(),
+                fallback = painterResource(id = R.drawable.logo),
+                error = painterResource(id = R.drawable.logo),
+                placeholder = painterResource(id = R.drawable.logo),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .aspectRatio(1f)
+                    .padding(3.dp)
+                    .clip(ShapeDefaults.Small)
+            )
+            Text(
+                fontSize = 5.em,
+                fontWeight = FontWeight.ExtraBold,
+                text = menuItem.itemName
+            )
+        }
+
+        Column(
+            horizontalAlignment = Alignment.End
+        ){
+            Text(text = "x${quantity.toString()}")
+            Text(
+                fontSize = 3.em,
+                fontWeight = FontWeight.Bold,
+                text = menuItem.itemPrice.toString()
+            )
+        }
+    }
+}
+
+@Composable
+fun OrderItemRow(menuItem:MenuItem, quantity: Int, parentOrder:Order, modifier: Modifier){
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier
+            .padding(8.dp, 0.dp)
+            .height(55.dp)
+            .fillMaxWidth()
+    ) {
+        Row(
+            modifier = modifier
+        ) {
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(menuItem.itemImages?.first() .toString())
+                    .crossfade(true)
+                    .build(),
+                fallback = painterResource(id = R.drawable.logo),
+                error = painterResource(id = R.drawable.logo),
+                placeholder = painterResource(id = R.drawable.logo),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .aspectRatio(1f)
+                    .padding(3.dp)
+                    .clip(ShapeDefaults.Small)
+            )
+            Text(
+                fontSize = 5.em,
+                fontWeight = FontWeight.ExtraBold,
+                text = menuItem.itemName
+            )
+        }
+
+        Column(
+            horizontalAlignment = Alignment.End
+        ){
+            Text(text = "x${quantity.toString()}")
+            Text(
+                fontSize = 3.em,
+                fontWeight = FontWeight.Bold,
+                text = menuItem.itemPrice.toString()
+            )
         }
     }
 }
