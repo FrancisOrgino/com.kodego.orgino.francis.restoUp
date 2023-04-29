@@ -32,7 +32,7 @@
         app:layout_constraintTop_toBottomOf="@+id/text_customerCheckout"
         app:layout_constraintVertical_bias="0.405" />
 
-    <Spinner
+    <androidx.appcompat.widget.AppCompatSpinner
         android:id="@+id/spinnerTableDropDown"
         android:layout_width="337dp"
         android:layout_height="44dp"
